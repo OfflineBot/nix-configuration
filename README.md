@@ -2,8 +2,8 @@
 
 Meine NixOS Config. Ein Repo, zwei Branches:
 
-- `system` liegt unter `~/.nix` und enthaelt die `configuration.nix` (Flake).
-- `home` liegt unter `~/.home` und enthaelt die Home-Manager Config (Flake).
+- Branch `system` liegt unter `~/.nix` und enthaelt die `configuration.nix` (Flake).
+- Branch `home` liegt unter `~/.home` und enthaelt die Home-Manager Config (Flake).
 
 ## Struktur
 
