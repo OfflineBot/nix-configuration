@@ -24,6 +24,7 @@
         zoxide
         discord
         gh
+        pavucontrol
 
         unzip zip
         claude-code
