@@ -26,6 +26,7 @@
         gh
         pavucontrol
         brightnessctl
+        hyprlock
 
         unzip zip
         claude-code
