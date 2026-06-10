@@ -25,6 +25,7 @@
         discord
         gh
         pavucontrol
+        brightnessctl
 
         unzip zip
         claude-code
