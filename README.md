@@ -4,14 +4,15 @@ Meine NixOS Config. Ein Repo, zwei Branches:
 
 - Branch `system` liegt unter `~/.nix` und enthaelt die `configuration.nix` (Flake).
 - Branch `home` liegt unter `~/.home` und enthaelt die Home-Manager Config (Flake).
+- Branch `dotfiles` liegt unter `~/.dotfiles` und enthaelt die Dotfiles (Flake + stow-kompatibel).
 
 ## Struktur
 
 ```
-~/.nix    (branch: system)        ~/.home   (branch: home)
-  flake.nix                         flake.nix
-  configuration.nix                 home.nix
-  hardware-configuration.nix
+~/.nix    (branch: system)        ~/.home   (branch: home)        ~/.dotfiles (branch: dotfiles)
+  flake.nix                         flake.nix                        flake.nix
+  configuration.nix                 home.nix                         .config/
+  hardware-configuration.nix                                         Pictures/
 ```
 
 ## Anwenden
@@ -26,6 +27,26 @@ Home-Manager:
 
 ```sh
 home-manager switch --flake ~/.home#offlinebot
+```
+
+## Dotfiles
+
+Klonen nach `~/.dotfiles`:
+
+```sh
+git clone -b dotfiles https://github.com/offlineBot/nix-configuration.git ~/.dotfiles
+```
+
+Flake (Home-Manager, Symlinks via `mkOutOfStoreSymlink`):
+
+```sh
+home-manager switch --flake ~/.dotfiles#offlinebot
+```
+
+stow:
+
+```sh
+cd ~/.dotfiles && stow .
 ```
 
 ## System (configuration.nix)
