@@ -77,22 +77,29 @@ Item {
         return s >= 75 ? "󰤨" : s >= 50 ? "󰤥" : s >= 25 ? "󰤢" : "󰤟"
     }
 
+    // a connection that is up but verified to have NO internet. Only "none"/
+    // "limited" count — "unknown" (connectivity check disabled) and "full" are
+    // treated as fine, so the wifi icon still reflects signal strength.
+    readonly property bool noInternet:
+        connectivity === "none" || connectivity === "limited"
+
     // single status icon: wifi signal / lan / "no internet" variants
     function netIcon() {
         if (root.netType === "ethernet")
-            return root.connectivity === "full" ? "󰈀" : "󰈂"   // lan / lan-no-internet
+            return root.noInternet ? "󰈂" : "󰈀"          // lan-no-internet / lan
         if (root.netType === "wifi")
-            return (root.connectivity === "full") ? root.sigIcon(root.currentSignal)
-                   : "󰤩"                                       // connected, no internet
-        return "󰤭"                                             // nothing connected
+            // signal strength drives the icon: 󰤨 full → 󰤟 weak (see sigIcon).
+            return root.noInternet ? "󰤩"                 // connected, no internet
+                   : root.sigIcon(root.currentSignal)
+        return "󰤭"                                        // nothing connected
     }
     // tooltip shown on hover
     function statusText() {
         if (root.netType === "ethernet")
-            return (root.ethName || "Ethernet") + (root.connectivity !== "full" ? " — no internet" : "")
+            return (root.ethName || "Ethernet") + (root.noInternet ? " — no internet" : "")
         if (root.netType === "wifi")
             return root.currentSsid + (root.portal ? " — login required"
-                   : root.connectivity !== "full" ? " — no internet" : "")
+                   : root.noInternet ? " — no internet" : "")
         return root.wifiOn ? "Disconnected" : "Wi-Fi off"
     }
 
