@@ -17,7 +17,6 @@ set -x XCOMPOSEFILE $HOME/.XCompose
 set fish_greeting ""
 
 fish_add_path $HOME/.local/bin
-fish_add_path (go env GOPATH)/bin
 
 
 function fish_command_not_found
