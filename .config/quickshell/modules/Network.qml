@@ -149,28 +149,32 @@ Item {
             onStreamFinished: {
                 const parts = this.text.split("---")
 
-                // device status -> ethernet / wifi connected?
-                let eth = false, ethName = "", wifiUp = false
+                // `device status` is authoritative for what is ACTUALLY connected.
+                // (The wifi list's IN-USE '*' marker is unreliable — after roaming
+                // it often isn't set even while connected, causing false "Disconnected".)
+                let eth = false, ethName = "", wifiName = ""
                 for (const l of (parts[0] || "").trim().split("\n").filter(x => x.length)) {
                     const f = root.splitFields(l)   // TYPE:STATE:CONNECTION
-                    if (f[0] === "ethernet" && f[1] === "connected") { eth = true; ethName = f[2] }
-                    if (f[0] === "wifi" && f[1] === "connected") wifiUp = true
+                    if (f[1] !== "connected") continue   // exact: excludes "connected (externally)" (vpn/lo)
+                    if (f[0] === "ethernet") { eth = true; ethName = f[2] }
+                    else if (f[0] === "wifi") wifiName = f[2]
                 }
 
-                // current wifi ssid/signal
-                let ssid = "", sig = 0
+                // signal of the connected wifi, looked up in the scan list
+                let sig = 0
                 for (const l of (parts[1] || "").trim().split("\n").filter(x => x.length)) {
-                    const f = root.splitFields(l)
-                    if (f[0] === "*") { ssid = f[1]; sig = parseInt(f[2]) || 0; break }
+                    const f = root.splitFields(l)   // IN-USE:SSID:SIGNAL
+                    if (f[1] === wifiName) { const s = parseInt(f[2]) || 0; if (s > sig) sig = s }
                 }
-                root.currentSsid = ssid
+
+                root.currentSsid = wifiName
                 root.currentSignal = sig
                 root.connectivity = (parts[2] || "").trim() || "unknown"
                 root.wifiOn = ((parts[3] || "").trim() === "enabled")
 
                 // ethernet wins as the primary indicator, then wifi, else none
                 if (eth) { root.netType = "ethernet"; root.ethName = ethName }
-                else if (wifiUp && ssid) { root.netType = "wifi"; root.ethName = "" }
+                else if (wifiName) { root.netType = "wifi"; root.ethName = "" }
                 else { root.netType = "none"; root.ethName = "" }
             }
         }
@@ -209,7 +213,8 @@ Item {
                     const security = sec.length === 0 ? "open"
                                    : sec.indexOf("802.1X") !== -1 ? "enterprise" : "psk"
                     const sig = parseInt(f[3]) || 0
-                    const entry = { ssid: ssid, signal: sig, inUse: f[0] === "*", security: security }
+                    const entry = { ssid: ssid, signal: sig, security: security,
+                                    inUse: (f[0] === "*") || (ssid === root.currentSsid) }
                     if (!bySsid[ssid] || sig > bySsid[ssid].signal) bySsid[ssid] = entry
                 }
                 const arr = Object.values(bySsid)
@@ -228,33 +233,35 @@ Item {
     // ---- connect ----------------------------------------------------------
     // PSK / open. Rescans the SSID first (fixes "failed to determine AP
     // security information"), prefers bringing up a saved profile.
+    // -w 20 caps how long nmcli blocks, so a failure can't leave "Connecting…"
+    // hanging for the default ~90s.
     readonly property string _pskScript:
         'ssid="$1"; pw="$2";' +
         'nmcli device wifi rescan ssid "$ssid" 2>/dev/null;' +
         'sleep 2;' +
         'if [ -z "$pw" ] && nmcli -t -f NAME connection show | grep -Fxq "$ssid"; then' +
-        '  nmcli connection up id "$ssid" || nmcli device wifi connect "$ssid";' +
+        '  nmcli -w 20 connection up id "$ssid" || nmcli -w 20 device wifi connect "$ssid";' +
         'elif [ -n "$pw" ]; then' +
-        '  nmcli device wifi connect "$ssid" password "$pw";' +
+        '  nmcli -w 20 device wifi connect "$ssid" password "$pw";' +
         'else' +
-        '  nmcli device wifi connect "$ssid";' +
+        '  nmcli -w 20 device wifi connect "$ssid";' +
         'fi'
 
-    // WPA-Enterprise (eduroam). Empty creds -> reuse saved profile, else build
-    // a fresh PEAP/MSCHAPv2 connection.
+    // WPA-Enterprise. Configurable: $4 anon-identity, $5 eap, $6 phase2, $7 ca-cert.
+    // Empty creds -> reuse a saved profile. Optional args are only added when set.
     readonly property string _eapScript:
-        'ssid="$1"; id="$2"; pw="$3";' +
-        'nmcli device wifi rescan ssid "$ssid" 2>/dev/null;' +
-        'sleep 2;' +
-        'if [ -z "$id" ] && [ -z "$pw" ]; then' +
-        '  nmcli connection up id "$ssid";' +
-        'else' +
-        '  nmcli connection delete id "$ssid" 2>/dev/null;' +
-        '  nmcli connection add type wifi con-name "$ssid" ssid "$ssid"' +
-        '    wifi-sec.key-mgmt wpa-eap 802-1x.eap peap 802-1x.phase2-auth mschapv2' +
-        '    802-1x.identity "$id" 802-1x.password "$pw"' +
-        '    802-1x.password-flags 0 connection.autoconnect yes &&' +   // store secret, no agent prompt
-        '  nmcli connection up id "$ssid";' +
+        'ssid="$1"; id="$2"; pw="$3"; anon="$4"; eap="$5"; ph2="$6"; ca="$7"; ' +
+        'nmcli device wifi rescan ssid "$ssid" 2>/dev/null; sleep 2; ' +
+        'if [ -z "$id" ] && [ -z "$pw" ]; then ' +
+        '  nmcli -w 20 connection up id "$ssid"; ' +
+        'else ' +
+        '  nmcli connection delete id "$ssid" 2>/dev/null; ' +
+        '  set -- type wifi con-name "$ssid" ssid "$ssid" wifi-sec.key-mgmt wpa-eap ' +
+        '    802-1x.eap "$eap" 802-1x.phase2-auth "$ph2" 802-1x.identity "$id" ' +
+        '    802-1x.password "$pw" 802-1x.password-flags 0 connection.autoconnect yes; ' +
+        '  [ -n "$anon" ] && set -- "$@" 802-1x.anonymous-identity "$anon"; ' +
+        '  [ -n "$ca" ] && set -- "$@" 802-1x.ca-cert "$ca"; ' +
+        '  nmcli connection add "$@" && nmcli -w 20 connection up id "$ssid"; ' +
         'fi'
 
     function connectPsk(ssid, password) {
@@ -263,15 +270,17 @@ Item {
         connectProc.command = ["sh", "-c", root._pskScript, "_", ssid, password || ""]
         connectProc.running = true
     }
-    function connectEnterprise(ssid, identity, password) {
+    function connectEnterprise(ssid, identity, password, anon, eap, phase2, ca) {
         root.errorText = ""
         root.busySsid = ssid
-        connectProc.command = ["sh", "-c", root._eapScript, "_", ssid, identity || "", password || ""]
+        connectProc.command = ["sh", "-c", root._eapScript, "_",
+            ssid, identity || "", password || "", anon || "", eap, phase2, ca || ""]
         connectProc.running = true
     }
     function submit() {
         if (root.selectedSecurity === "enterprise")
-            root.connectEnterprise(root.selectedSsid, idField.text, pwField.text)
+            root.connectEnterprise(root.selectedSsid, idField.text, pwField.text,
+                anonField.text, root.eapOpts[root.eapIdx], root.ph2Opts[root.ph2Idx], caField.text)
         else
             root.connectPsk(root.selectedSsid, pwField.text)
     }
@@ -283,7 +292,16 @@ Item {
         stderr: StdioCollector { onStreamFinished: connectProc.err = this.text }
         onExited: (code, status) => {
             if (code !== 0) {
-                root.errorText = (connectProc.err || "Connection failed").trim()
+                // nmcli errors are multi-line + verbose ("Hint: use journalctl…").
+                // Keep just the first meaningful line, stripped and capped.
+                let msg = (connectProc.err || "")
+                    .split("\n")
+                    .map(l => l.trim())
+                    .filter(l => l.length && !l.startsWith("Hint:"))
+                    [0] || "Connection failed"
+                msg = msg.replace(/^Error:\s*/, "")
+                if (msg.length > 90) msg = msg.slice(0, 90) + "…"
+                root.errorText = msg
             } else {
                 root.errorText = ""
                 root.selectedSsid = ""
@@ -313,8 +331,13 @@ Item {
             root.selectedSsid = net.ssid
             root.selectedSecurity = net.security
             root.revealPw = false
+            root.advancedOpen = false
+            root.eapIdx = 0
+            root.ph2Idx = 0
             idField.text = ""
             pwField.text = ""
+            anonField.text = ""
+            caField.text = ""
             // defer focus: the field is only laid out once the panel turns
             // visible this frame; focusing immediately is racy.
             const target = net.security === "enterprise" ? idField : pwField
@@ -631,6 +654,110 @@ Item {
                         Keys.onEscapePressed: root.popupShown = false
                     }
 
+                    // advanced toggle (enterprise only)
+                    Text {
+                        visible: root.selectedSecurity === "enterprise"
+                        text: (root.advancedOpen ? "󰅀  " : "󰅂  ") + "Advanced"
+                        color: root.textColor
+                        opacity: advHover.containsMouse ? 0.9 : 0.6
+                        font.family: "FiraCode Nerd Font Mono"
+                        font.pixelSize: 11
+                        MouseArea {
+                            id: advHover
+                            anchors.fill: parent
+                            anchors.margins: -4
+                            hoverEnabled: true
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: root.advancedOpen = !root.advancedOpen
+                        }
+                    }
+
+                    // advanced enterprise options
+                    ColumnLayout {
+                        Layout.fillWidth: true
+                        visible: root.selectedSecurity === "enterprise" && root.advancedOpen
+                        spacing: 6
+
+                        RowLayout {
+                            Layout.fillWidth: true
+                            spacing: 6
+
+                            // EAP method chip (click to cycle)
+                            Rectangle {
+                                Layout.fillWidth: true
+                                Layout.preferredHeight: 30
+                                radius: 8
+                                color: credPanel.fieldFill
+                                border.width: 1; border.color: credPanel.fieldLine
+                                Text {
+                                    anchors.centerIn: parent
+                                    text: "EAP: " + root.eapOpts[root.eapIdx].toUpperCase()
+                                    color: root.textColor
+                                    font.family: "FiraCode Nerd Font Mono"
+                                    font.pixelSize: 12
+                                }
+                                MouseArea {
+                                    anchors.fill: parent
+                                    cursorShape: Qt.PointingHandCursor
+                                    onClicked: root.eapIdx = (root.eapIdx + 1) % root.eapOpts.length
+                                }
+                            }
+                            // Phase-2 chip (click to cycle)
+                            Rectangle {
+                                Layout.fillWidth: true
+                                Layout.preferredHeight: 30
+                                radius: 8
+                                color: credPanel.fieldFill
+                                border.width: 1; border.color: credPanel.fieldLine
+                                Text {
+                                    anchors.centerIn: parent
+                                    text: root.ph2Opts[root.ph2Idx].toUpperCase()
+                                    color: root.textColor
+                                    font.family: "FiraCode Nerd Font Mono"
+                                    font.pixelSize: 12
+                                }
+                                MouseArea {
+                                    anchors.fill: parent
+                                    cursorShape: Qt.PointingHandCursor
+                                    onClicked: root.ph2Idx = (root.ph2Idx + 1) % root.ph2Opts.length
+                                }
+                            }
+                        }
+
+                        TextField {
+                            id: anonField
+                            Layout.fillWidth: true
+                            Layout.preferredHeight: 34
+                            placeholderText: "Anonymous identity (optional)"
+                            placeholderTextColor: Qt.rgba(root.textColor.r, root.textColor.g, root.textColor.b, 0.4)
+                            color: root.textColor
+                            font.family: "FiraCode Nerd Font Mono"
+                            font.pixelSize: 12
+                            leftPadding: 10; rightPadding: 10
+                            background: Rectangle {
+                                radius: 8; color: credPanel.fieldFill
+                                border.width: 1
+                                border.color: anonField.activeFocus ? root.accentColor : credPanel.fieldLine
+                            }
+                        }
+                        TextField {
+                            id: caField
+                            Layout.fillWidth: true
+                            Layout.preferredHeight: 34
+                            placeholderText: "CA certificate path (optional)"
+                            placeholderTextColor: Qt.rgba(root.textColor.r, root.textColor.g, root.textColor.b, 0.4)
+                            color: root.textColor
+                            font.family: "FiraCode Nerd Font Mono"
+                            font.pixelSize: 12
+                            leftPadding: 10; rightPadding: 10
+                            background: Rectangle {
+                                radius: 8; color: credPanel.fieldFill
+                                border.width: 1
+                                border.color: caField.activeFocus ? root.accentColor : credPanel.fieldLine
+                            }
+                        }
+                    }
+
                     // full-width connect button
                     Rectangle {
                         Layout.fillWidth: true
@@ -661,7 +788,7 @@ Item {
                     Text {
                         visible: root.selectedSecurity === "enterprise"
                         Layout.fillWidth: true
-                        text: "eduroam · PEAP/MSCHAPv2 — leave empty to reuse a saved profile"
+                        text: "Defaults (PEAP/MSCHAPv2) fit most. Tune under Advanced; empty creds reuse a saved profile."
                         color: root.textColor
                         opacity: 0.45
                         font.family: "FiraCode Nerd Font Mono"
