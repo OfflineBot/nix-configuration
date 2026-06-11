@@ -9,6 +9,7 @@
 
 import Quickshell
 import Quickshell.Io
+import Quickshell.Wayland
 import QtQuick
 
 Scope {
@@ -18,6 +19,7 @@ Scope {
     property color borderColor: "#d5dde8"
     property color textColor: "#d5dde8"
     property color accentColor: "#8ec07b"
+    property real backgroundOpacity: 0.65     // < 1 so niri's blur shows through
     property int barHeight: 30
 
     // per-monitor visibility, default visible
@@ -53,6 +55,8 @@ Scope {
             color: "transparent"
             implicitHeight: root.barHeight
             exclusionMode: ExclusionMode.Auto      // reserve space so windows sit below
+            // distinct layer namespace so a niri `layer-rule` can blur just the bar
+            WlrLayershell.namespace: "quickshell-bar"
 
             anchors.top: true
             anchors.left: true
@@ -60,7 +64,8 @@ Scope {
 
             Rectangle {
                 anchors.fill: parent
-                color: root.backgroundColor
+                color: Qt.rgba(root.backgroundColor.r, root.backgroundColor.g,
+                               root.backgroundColor.b, root.backgroundOpacity)
 
                 // dezente Unterkante statt vollem Rahmen
                 Rectangle {

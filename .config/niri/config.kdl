@@ -94,8 +94,8 @@ layout {
 
 // Global blur quality. Niedriges offset + mehr passes = sauberer Blur ohne Smear-Offset.
 blur {
-    passes 4
-    offset 3.0
+    passes 3
+    offset 2.0
     noise 0.05
     saturation 0.8
 }
@@ -149,13 +149,14 @@ layer-rule {
     }
 }
 
-// Blur behind quickshell / eww panels / notifications
-// layer-rule {
-//     match namespace="^quickshell"
-//     background-effect {
-//         blur true
-//     }
-// }
+// Blur behind the quickshell topbar (namespace set in modules/Topbar.qml)
+layer-rule {
+    match namespace="^quickshell-bar$"
+    background-effect {
+        blur true
+        xray false
+    }
+}
 
 layer-rule {
     match namespace="^notifications$"
