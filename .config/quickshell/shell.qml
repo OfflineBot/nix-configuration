@@ -39,4 +39,12 @@ ShellRoot {
         cornerRadius: root.cornerRadius
     }
 
+    ScriptLauncher {
+        backgroundColor: root.backgroundColor
+        borderColor: root.borderColor
+        textColor: root.textColor
+        borderWidth: root.borderWidth
+        cornerRadius: root.cornerRadius
+    }
+
 }

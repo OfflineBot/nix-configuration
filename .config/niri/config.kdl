@@ -255,7 +255,8 @@ binds {
 
     // --- Apps (mango) ---
     Mod+Q hotkey-overlay-title="Terminal: kitty" { spawn "kitty"; }
-    Mod+Space hotkey-overlay-title="Launcher: fuzzel" { spawn "qs" "ipc" "call" "launcher" "toggle"; }
+    Mod+Space hotkey-overlay-title="Launcher: quickshell" { spawn "qs" "ipc" "call" "launcher" "toggle"; }
+    Mod+Shift+Space hotkey-overlay-title="Launcher: quickshell" { spawn "qs" "ipc" "call" "scriptlauncher" "toggle"; }
     Mod+W hotkey-overlay-title="Firefox" { spawn "firefox"; }
     Mod+O repeat=false hotkey-overlay-title="Overview" { toggle-overview; }
     Mod+P hotkey-overlay-title="Pavucontrol" { spawn "pavucontrol"; }
