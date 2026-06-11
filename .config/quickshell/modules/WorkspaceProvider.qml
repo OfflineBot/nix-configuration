@@ -21,6 +21,7 @@ Scope {
     readonly property string backend:
         Quickshell.env("NIRI_SOCKET") ? "niri"
         : Quickshell.env("HYPRLAND_INSTANCE_SIGNATURE") ? "hyprland"
+        : Quickshell.env("MANGO_INSTANCE_SIGNATURE") ? "mango"
         : "none"
 
     // Switch to a workspace (called from the view on click).
@@ -31,6 +32,11 @@ Scope {
             Quickshell.execDetached(["niri", "msg", "action", "focus-workspace", ref])
         } else if (root.backend === "hyprland") {
             Hyprland.dispatch("workspace " + ws.id)
+        } else if (root.backend === "mango") {
+            // mango (dwl-style tags): `view,<n>` switches to tag n on the
+            // focused monitor. acts on selmon, so clicking a tag on another
+            // output focuses that tag on the currently active monitor.
+            Quickshell.execDetached(["mmsg", "dispatch", "view," + String(ws.idx)])
         }
     }
 
@@ -68,6 +74,48 @@ Scope {
             }
             root.workspaces = cur   // reassign so bindings re-evaluate
         }
+    }
+
+    // --------------------------------------------------------------- mango ---
+    // `mmsg watch all-tags` emits one compact JSON object per line:
+    //   {"all_tags":[{"monitor":"eDP-1","tags":[
+    //       {"index":1,"is_active":false,"is_urgent":false,"layout":"T","client_count":0}, ...]}, ...]}
+    // mango is tag-based (dwm/dwl): a fixed set of tags per output, several of
+    // which can be "active" (visible) at once. There's no per-tag name, and the
+    // stream doesn't say which monitor is selected, so `focused` mirrors
+    // `is_active` per output.
+    Process {
+        id: mangoProc
+        running: root.backend === "mango"
+        command: ["mmsg", "watch", "all-tags"]
+        stdout: SplitParser { onRead: line => root._onMangoLine(line) }
+    }
+
+    function _onMangoLine(line) {
+        let ev
+        try { ev = JSON.parse(line) } catch (e) { return }
+        if (!ev.all_tags) return
+
+        const ws = []
+        for (const mon of ev.all_tags) {
+            for (const t of mon.tags) {
+                // Only surface tags that are visible or hold a window; empty
+                // unused tags stay hidden (drop the filter to show all of them).
+                if (!t.is_active && t.client_count <= 0) continue
+                ws.push({
+                    id: mon.monitor + ":" + t.index,
+                    idx: t.index,
+                    name: "",
+                    output: mon.monitor,
+                    active: t.is_active,
+                    focused: t.is_active,
+                    urgent: t.is_urgent,
+                    occupied: t.client_count > 0
+                })
+            }
+        }
+        ws.sort((a, b) => (a.output || "").localeCompare(b.output || "") || a.idx - b.idx)
+        root.workspaces = ws
     }
 
     // ------------------------------------------------------------ hyprland ---
