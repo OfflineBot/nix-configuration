@@ -77,6 +77,25 @@ Item {
         return s >= 75 ? "󰤨" : s >= 50 ? "󰤥" : s >= 25 ? "󰤢" : "󰤟"
     }
 
+    // single status icon: wifi signal / lan / "no internet" variants
+    function netIcon() {
+        if (root.netType === "ethernet")
+            return root.connectivity === "full" ? "󰈀" : "󰈂"   // lan / lan-no-internet
+        if (root.netType === "wifi")
+            return (root.connectivity === "full") ? root.sigIcon(root.currentSignal)
+                   : "󰤩"                                       // connected, no internet
+        return "󰤭"                                             // nothing connected
+    }
+    // tooltip shown on hover
+    function statusText() {
+        if (root.netType === "ethernet")
+            return (root.ethName || "Ethernet") + (root.connectivity !== "full" ? " — no internet" : "")
+        if (root.netType === "wifi")
+            return root.currentSsid + (root.portal ? " — login required"
+                   : root.connectivity !== "full" ? " — no internet" : "")
+        return root.wifiOn ? "Disconnected" : "Wi-Fi off"
+    }
+
     // nmcli -t escapes ':' and '\' — split on UNescaped ':'.
     function splitFields(line) {
         const out = []
@@ -91,41 +110,71 @@ Item {
         return out
     }
 
-    // ---- indicator --------------------------------------------------------
-    Row {
+    // ---- indicator (icon only) --------------------------------------------
+    Text {
         id: indicator
         anchors.verticalCenter: parent.verticalCenter
-        spacing: 5
-
-        Text {
-            anchors.verticalCenter: parent.verticalCenter
-            text: root.netType === "ethernet" ? "󰈀"
-                  : root.netType === "wifi" ? root.sigIcon(root.currentSignal)
-                  : "󰤭"
-            font.family: "MesloLGS Nerd Font Mono"
-            font.pixelSize: 16
-            color: root.portal ? root.warnColor
-                   : root.netType === "none" ? root.textColor : root.textColor
-            opacity: root.netType === "none" ? 0.5 : 1.0
-        }
-        Text {
-            anchors.verticalCenter: parent.verticalCenter
-            text: root.netType === "ethernet" ? "LAN"
-                  : root.netType === "wifi" ? root.currentSsid
-                  : "Disconnected"
-            font.family: "FiraCode Nerd Font Mono"
-            font.pixelSize: 13
-            color: root.portal ? root.warnColor : root.textColor
-            opacity: root.netType === "none" ? 0.5 : 0.85
-        }
+        text: root.netIcon()
+        font.family: "MesloLGS Nerd Font Mono"
+        font.pixelSize: 16
+        color: root.portal ? root.warnColor : root.textColor
+        opacity: root.netType === "none" ? 0.5 : 1.0
     }
 
     MouseArea {
+        id: hoverArea
         anchors.fill: parent
+        hoverEnabled: true
         cursorShape: Qt.PointingHandCursor
         onClicked: {
             root.popupShown = !root.popupShown
             if (root.popupShown) root.scan()
+        }
+    }
+
+    // hover tooltip: own overlay window BELOW the bar, so it isn't clipped by
+    // the slim bar and never sits over the icon (clicks stay on the icon).
+    property bool hovered: hoverArea.containsMouse
+    onHoveredChanged: {
+        if (!hovered) return
+        const w = tipText.implicitWidth + 20
+        let left = Math.round(indicator.mapToItem(null, 0, 0).x)
+        const sw = root.screen ? root.screen.width : 1920
+        if (left + w > sw - 6) left = sw - w - 6
+        if (left < 6) left = 6
+        tipWindow.margins.left = left
+    }
+
+    PanelWindow {
+        id: tipWindow
+        screen: root.screen
+        visible: root.hovered && root.statusText().length > 0
+        color: "transparent"
+        exclusionMode: ExclusionMode.Ignore
+        aboveWindows: true
+        WlrLayershell.layer: WlrLayer.Overlay
+        WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
+
+        anchors.top: true
+        anchors.left: true
+        margins.top: root.barHeight + 2
+        implicitWidth: tipText.implicitWidth + 20
+        implicitHeight: 28
+
+        Rectangle {
+            anchors.fill: parent
+            color: root.backgroundColor
+            radius: 8
+            border.color: root.borderColor
+            border.width: 1
+            Text {
+                id: tipText
+                anchors.centerIn: parent
+                text: root.statusText()
+                color: root.portal ? root.warnColor : root.textColor
+                font.family: "FiraCode Nerd Font Mono"
+                font.pixelSize: 12
+            }
         }
     }
 

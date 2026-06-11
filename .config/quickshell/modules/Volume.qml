@@ -23,13 +23,11 @@ Item {
     property real volume: 0.0          // 0.0 .. 1.0 (can exceed 1 in PipeWire)
     property bool muted: false
 
-    readonly property int pct: Math.round(root.volume * 100)
-
     function volIcon() {
-        if (root.muted || root.volume <= 0.0) return "󰝟"   // muted / silent
-        if (root.volume < 0.34) return "󰕿"                 // low
-        if (root.volume < 0.67) return "󰖀"                 // medium
-        return "󰕾"                                          // high
+        if (root.muted) return "󰖁"          // struck-through speaker
+        if (root.volume < 0.34) return "󰕿"  // low
+        if (root.volume < 0.67) return "󰖀"  // medium
+        return "󰕾"                           // high
     }
 
     function toggleMute() {
@@ -48,29 +46,15 @@ Item {
     }
 
     // ---- indicator --------------------------------------------------------
-    Row {
+    Text {
         id: indicator
         anchors.verticalCenter: parent.verticalCenter
-        spacing: 5
-
-        Text {
-            anchors.verticalCenter: parent.verticalCenter
-            text: root.volIcon()
-            font.family: "MesloLGS Nerd Font Mono"
-            font.pixelSize: 16
-            color: root.textColor
-            opacity: root.muted ? 0.5 : 1.0
-            Behavior on opacity { NumberAnimation { duration: 150; easing.type: Easing.OutQuad } }
-        }
-        Text {
-            anchors.verticalCenter: parent.verticalCenter
-            text: root.muted ? "muted" : (root.pct + "%")
-            font.family: "FiraCode Nerd Font Mono"
-            font.pixelSize: 13
-            color: root.textColor
-            opacity: root.muted ? 0.5 : 0.85
-            Behavior on opacity { NumberAnimation { duration: 150; easing.type: Easing.OutQuad } }
-        }
+        text: root.volIcon()
+        font.family: "MesloLGS Nerd Font Mono"
+        font.pixelSize: 16
+        color: root.textColor                       // white when on
+        opacity: root.muted ? 0.4 : 1.0             // grayed out when muted
+        Behavior on opacity { NumberAnimation { duration: 150; easing.type: Easing.OutQuad } }
     }
 
     MouseArea {
