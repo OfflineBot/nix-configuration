@@ -8,7 +8,7 @@
             inputs.nixpkgs.follows = "nixpkgs";
         };
         dotfiles = {
-            url = "github:OfflineBot/delete_me_dot";
+            url = "github:OfflineBot/nix-configuration/dotfiles";
             inputs.nixpkgs.follows = "nixpkgs";
             inputs.home-manager.follows = "home-manager";
         };

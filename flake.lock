@@ -10,16 +10,17 @@
         ]
       },
       "locked": {
-        "lastModified": 1781177985,
-        "narHash": "sha256-LyvVbpqd6aZqNbb8CHGZDbP35A/tAfCdtHe4s/DmQe4=",
+        "lastModified": 1781179544,
+        "narHash": "sha256-r1Vp7TY7rIiAOSdyUjHT+9AT63IPkMcxh5mLynwRDb4=",
         "owner": "OfflineBot",
-        "repo": "delete_me_dot",
-        "rev": "d21fdbf9d2ad1f1556469954f4067029bad91c32",
+        "repo": "nix-configuration",
+        "rev": "c983252b4d055362b3b6a7e4edb1afc0971177a5",
         "type": "github"
       },
       "original": {
         "owner": "OfflineBot",
-        "repo": "delete_me_dot",
+        "ref": "dotfiles",
+        "repo": "nix-configuration",
         "type": "github"
       }
     },
