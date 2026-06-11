@@ -12,6 +12,8 @@
 eval (dircolors -c ~/.dircolors | string replace 'LS_COLORS=' 'set -x LS_COLORS ' | string replace ';$' '' )
 
 set -Ux TERMINAL alacritty
+set -gx EDITOR nvim
+set -gx VISUAL nvim
 set -x GOPROXY direct
 set -x XCOMPOSEFILE $HOME/.XCompose
 set fish_greeting ""

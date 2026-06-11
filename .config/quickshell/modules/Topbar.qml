@@ -5,7 +5,7 @@
 //   niri:     qs ipc call topbar toggle (niri msg --json focused-output | jq -r .name)
 //   hyprland: qs ipc call topbar toggle (hyprctl monitors -j | jq -r '.[]|select(.focused).name')
 //
-// Layout: [workspaces]  ……  [date · time]  ……  [tray · wlan · battery]
+// Layout: [workspaces]  ……  [date · time]  ……  [tray · wlan · volume · battery]
 
 import Quickshell
 import Quickshell.Io
@@ -113,6 +113,10 @@ Scope {
                         accentColor: root.accentColor
                         backgroundColor: root.backgroundColor
                         borderColor: root.borderColor
+                    }
+                    Volume {
+                        anchors.verticalCenter: parent.verticalCenter
+                        textColor: root.textColor
                     }
                     Battery {
                         anchors.verticalCenter: parent.verticalCenter
