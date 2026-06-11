@@ -1,0 +1,97 @@
+#
+# set window-title-basename "true"
+# set selection-clipboard "clipboard"
+#
+# # Colors adapted from kitty colors
+#
+# set notification-error-bg       rgba(204,35,28,1)      # color1 (#cc231c)
+# set notification-error-fg       rgba(235,219,178,1)    # foreground (#ebdbb2)
+#
+# set notification-warning-bg     rgba(215,153,32,1)     # color3 (#d79920)
+# set notification-warning-fg     rgba(24,24,24,1)       # background (#181818)
+#
+# set notification-bg             rgba(24,24,24,1)       # background (#181818)
+# set notification-fg             rgba(235,219,178,1)    # foreground (#ebdbb2)
+#
+# set completion-bg               rgba(39,39,39,1)       # color0 darkened (#272727)
+# set completion-fg               rgba(235,219,178,1)    # foreground (#ebdbb2)
+# set completion-group-bg         rgba(39,39,39,1)       # color0 (#272727)
+# set completion-group-fg         rgba(68,132,136,1)     # color4 (#448488)
+#
+# set completion-highlight-bg     rgba(102,91,83,1)      # selection_foreground (#655b53)
+# set completion-highlight-fg     rgba(235,219,178,1)    # foreground (#ebdbb2)
+#
+# set index-bg                    rgba(24,24,24,1)       # background (#181818)
+# set index-fg                    rgba(235,219,178,1)    # foreground (#ebdbb2)
+# set index-active-bg             rgba(39,39,39,1)       # color0 (#272727)
+# set index-active-fg             rgba(235,219,178,1)    # foreground (#ebdbb2)
+#
+# set inputbar-bg                 rgba(39,39,39,1)       # color0 (#272727)
+# set inputbar-fg                 rgba(235,219,178,1)    # foreground (#ebdbb2)
+#
+# set statusbar-bg                rgba(39,39,39,1)       # color0 (#272727)
+# set statusbar-fg                rgba(235,219,178,1)    # foreground (#ebdbb2)
+#
+# set highlight-color             rgba(102,91,83,0.5)    # selection_foreground with 50% opacity (#655b53)
+# set highlight-active-color      rgba(177,97,133,0.5)   # color5 with 50% opacity (#b16185)
+#
+# set default-bg                  rgba(24,24,24,0.7)       # background (#181818)
+# set default-fg                  rgba(235,219,178,1)    # foreground (#ebdbb2)
+#
+# set render-loading              true
+# set render-loading-bg           rgba(39,39,39,1)       # color0 (#272727)
+# set render-loading-fg           rgba(235,219,178,1)    # foreground (#ebdbb2)
+#
+# set recolor-lightcolor          rgba(24,24,24,1)       # background (#181818)
+# set recolor-darkcolor           rgba(235,219,178,1)    # foreground (#ebdbb2)
+#
+# set adjust-open width
+# set recolor false
+# set recolor-keephue true
+#
+# # URL color setting (zathura might not support direct URL color but use hint colors)
+# set hint-link-color             rgba(214,92,13,1)      # url_color (#d65c0d)
+
+
+
+
+set default-fg                rgba(205,214,244,1)
+set default-bg                rgba(30,30,46,1)
+
+set completion-bg             rgba(49,50,68,1)
+set completion-fg             rgba(205,214,244,1)
+set completion-highlight-bg   rgba(203,166,247,1)
+set completion-highlight-fg   rgba(30,30,46,1)
+set completion-group-bg       rgba(24,24,37,1)
+set completion-group-fg       rgba(205,214,244,1)
+
+set statusbar-fg              rgba(205,214,244,1)
+set statusbar-bg              rgba(17,17,27,1)
+set inputbar-fg               rgba(205,214,244,1)
+set inputbar-bg               rgba(30,30,46,1)
+
+set notification-bg           rgba(30,30,46,1)
+set notification-fg           rgba(205,214,244,1)
+set notification-error-bg     rgba(30,30,46,1)
+set notification-error-fg     rgba(243,139,168,1)
+set notification-warning-bg   rgba(30,30,46,1)
+set notification-warning-fg   rgba(249,226,175,1)
+
+set recolor                   true
+set recolor-keephue           true
+
+set recolor-lightcolor        rgba(30,30,46,1)
+set recolor-darkcolor         rgba(205,214,244,1)
+
+set index-fg                  rgba(205,214,244,1)
+set index-bg                  rgba(30,30,46,1)
+set index-active-fg           rgba(205,214,244,1)
+set index-active-bg           rgba(49,50,68,1)
+
+set render-loading-bg         rgba(30,30,46,1)
+set render-loading-fg         rgba(205,214,244,1)
+
+set highlight-color           rgba(147,153,178,0.3)
+set highlight-fg              rgba(205,214,244,1)
+set highlight-active-color    rgba(203,166,247,0.3)
+

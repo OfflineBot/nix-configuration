@@ -1,0 +1,191 @@
+
+
+cursor {
+    xcursor-theme "Adwaita"
+    xcursor-size 24
+}
+
+input {
+    keyboard {
+        xkb {
+            layout "us"
+            options "compose:rctrl,lv3:ralt_switch"
+            variant "altgr-intl"
+
+        }
+        numlock
+    }
+    touchpad {
+        // off
+        tap
+        natural-scroll
+    }
+
+    mouse {
+        // off
+        accel-speed -0.7
+        accel-profile "flat"
+    }
+}
+
+output "HDMI-A-2" {
+    mode "1920x1080@60"
+    scale 1
+    transform "normal"
+    position x=-1920 y=230
+}
+output "DP-1" {
+    mode "1920x1080@144.001"
+    scale 1
+    transform "normal"
+    position x=0 y=0
+}
+output "DP-3" {
+    mode "1280x1024@75.025"
+    scale 1
+    transform "normal"
+    position x=1920 y=330
+}
+
+layout {
+    gaps 10
+    center-focused-column "never"
+
+    preset-column-widths {
+        proportion 0.33333
+        proportion 0.5
+        proportion 0.66667
+    }
+
+    default-column-width { proportion 0.5; }
+
+    focus-ring {
+        width 2
+        active-color "#ebdbb2"
+    }
+
+    struts {
+        // left 64
+        // right 64
+        // top 64
+        // bottom 64
+    }
+}
+
+spawn-at-startup "swww-daemon"
+spawn-at-startup "xwayland-satellite"
+
+environment {
+    DISPLAY ":0"
+}
+prefer-no-csd
+
+screenshot-path "~/Pictures/Screenshots/Screenshot from %Y-%m-%d %H-%M-%S.png"
+
+animations {
+    // off
+    slowdown 1.0
+}
+
+window-rule {
+    match app-id=r#"^org\.wezfurlong\.wezterm$"#
+    default-column-width {}
+}
+
+window-rule {
+    match app-id=r#"firefox$"# title="^Picture-in-Picture$"
+    open-floating true
+}
+
+window-rule {
+    geometry-corner-radius 8
+    clip-to-geometry true
+}
+
+binds {
+
+    Mod+Shift+Slash { show-hotkey-overlay; }
+
+    Mod+Q hotkey-overlay-title="Open a Terminal: kitty" { spawn "kitty"; }
+    
+    Mod+Space hotkey-overlay-title="Run an Application: fuzzel" { spawn "fuzzel"; }
+    Super+Alt+L hotkey-overlay-title="Lock the Screen: swaylock" { spawn "swaylock"; }
+    Mod+W hotkey-overlay-title="Open Firefox" { spawn "firefox"; }
+    Mod+M hotkey-overlay-title="Open eww logout" { spawn "eww" "open" "--toggle" "logout"; }
+    //Mod+Space hotkey-overlay-title="Run Rofi" { spawn "rofi -show drun"; }
+
+    // You can also use a shell. Do this if you need pipes, multiple commands, etc.
+    // Note: the entire command goes as a single argument in the end.
+    // Mod+T { spawn "bash" "-c" "notify-send hello && exec alacritty"; }
+
+    // Example volume keys mappings for PipeWire & WirePlumber.
+    // The allow-when-locked=true property makes them work even when the session is locked.
+    XF86AudioRaiseVolume allow-when-locked=true { spawn "wpctl" "set-volume" "@DEFAULT_AUDIO_SINK@" "0.1+"; }
+    XF86AudioLowerVolume allow-when-locked=true { spawn "wpctl" "set-volume" "@DEFAULT_AUDIO_SINK@" "0.1-"; }
+    XF86AudioMute        allow-when-locked=true { spawn "wpctl" "set-mute" "@DEFAULT_AUDIO_SINK@" "toggle"; }
+    XF86AudioMicMute     allow-when-locked=true { spawn "wpctl" "set-mute" "@DEFAULT_AUDIO_SOURCE@" "toggle"; }
+
+    Mod+O repeat=false { toggle-overview; }
+
+    Mod+C { close-window; }
+
+    Mod+H     { focus-column-left; }
+    Mod+L     { focus-column-right; }
+    Mod+J     { focus-window-or-workspace-down; }
+    Mod+K     { focus-window-or-workspace-up; }
+
+    Mod+Shift+H     { move-column-left; }
+    Mod+Shift+J     { move-window-down-or-to-workspace-down; }
+    Mod+Shift+K     { move-window-up-or-to-workspace-up; }
+    Mod+Shift+L     { move-column-right; }
+
+    Ctrl+H     { focus-monitor-left; }
+    Ctrl+J     { focus-monitor-down; }
+    Ctrl+K     { focus-monitor-up; }
+    Ctrl+L     { focus-monitor-right; }
+
+    Mod+Shift+1     { move-column-to-monitor "HDMI-A-2"; }
+    Mod+Shift+2     { move-column-to-monitor "DP-1"; }
+    Mod+Shift+3     { move-column-to-monitor "DP-3"; }
+    Mod+1   { focus-monitor "HDMI-A-2"; }
+    Mod+2   { focus-monitor "DP-1"; }
+    Mod+3   { focus-monitor "DP-3"; }
+
+    Mod+BracketLeft  { consume-or-expel-window-left; }
+    Mod+BracketRight { consume-or-expel-window-right; }
+
+    Mod+Comma  { consume-window-into-column; }
+    Mod+Period { expel-window-from-column; }
+
+    Mod+R { switch-preset-column-width; }
+    Mod+Shift+R { switch-preset-window-height; }
+    Mod+Ctrl+R { reset-window-height; }
+    Mod+F { maximize-column; }
+    Mod+Shift+F { fullscreen-window; }
+
+    Mod+Ctrl+F { expand-column-to-available-width; }
+
+    Mod+E { center-column; }
+
+    Mod+Ctrl+C { center-visible-columns; }
+
+    Mod+Minus { set-column-width "-10%"; }
+    Mod+Equal { set-column-width "+10%"; }
+
+    Mod+Shift+Minus { set-window-height "-10%"; }
+    Mod+Shift+Equal { set-window-height "+10%"; }
+
+    Mod+V       { toggle-window-floating; }
+    Mod+Shift+V { switch-focus-between-floating-and-tiling; }
+
+    Mod+G { toggle-column-tabbed-display; }
+
+    Print { screenshot; }
+    Ctrl+Print { screenshot-screen; }
+    Alt+Print { screenshot-window; }
+
+    Mod+Escape allow-inhibiting=false { toggle-keyboard-shortcuts-inhibit; }
+
+    Mod+Shift+E { quit; }
+    Mod+Shift+P { power-off-monitors; }
+}

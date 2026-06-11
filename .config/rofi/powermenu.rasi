@@ -1,0 +1,60 @@
+/* Catppuccin Mocha Power Menu */
+* {
+    bg:       #1e1e2eee;
+    bg-alt:   #181825;
+    fg:       #cdd6f4;
+    fg-alt:   #a6adc8;
+    accent:   #cba6f7;
+    urgent:   #f38ba8;
+    surface:  #313244;
+
+    background-color: transparent;
+    text-color: @fg;
+    font: "FiraCode Nerd Font Mono Bold 18";
+}
+
+window {
+    width: 420px;
+    background-color: @bg;
+    border: 2px solid;
+    border-color: @accent;
+    border-radius: 12px;
+    padding: 20px;
+    location: center;
+    anchor: center;
+}
+
+mainbox {
+    spacing: 0px;
+}
+
+inputbar {
+    enabled: false;
+}
+
+listview {
+    lines: 3;
+    columns: 1;
+    fixed-height: true;
+    spacing: 8px;
+    cycle: true;
+}
+
+element {
+    padding: 14px 0px;
+    border-radius: 8px;
+    cursor: pointer;
+    horizontal-align: 0.5;
+}
+
+element selected.normal {
+    background-color: @accent;
+    text-color: @bg-alt;
+}
+
+element-text {
+    background-color: inherit;
+    text-color: inherit;
+    horizontal-align: 0.5;
+    vertical-align: 0.5;
+}

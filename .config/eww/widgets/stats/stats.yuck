@@ -1,0 +1,21 @@
+
+
+(defwidget centerstat []
+    (box :orientation "vertical" :class "center-stats-box"
+        (label :halign "start" :class "center-stats-item center-stat-ram" :text "RAM: ${ram}%")
+        (label :halign "start" :class "center-stats-item center-stat-cpu" :text "CPU: ${cpu}%")
+        (label :halign "start" :class "center-stats-item center-stat-gpu" :text "GPU: ${gpu}%"))
+)
+
+
+(defwindow center-stats
+    :monitor 0
+    :geometry (geometry 
+        :anchor "top left")
+    :stacking "bg"
+    :windowtype "dock"
+    :class "center-stats"
+    :exclusive false
+    :wm-ignore true
+    (centerstat))
+

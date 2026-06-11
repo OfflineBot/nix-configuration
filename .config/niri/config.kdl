@@ -1,0 +1,381 @@
+cursor {
+    xcursor-theme "Adwaita"
+    xcursor-size 24
+}
+
+input {
+    focus-follows-mouse
+    warp-mouse-to-focus mode="center-xy-always"
+    keyboard {
+        xkb {
+            layout "us"
+            options "compose:rctrl,lv3:ralt_switch"
+            variant "altgr-intl"
+        }
+        numlock
+        repeat-delay 600
+        repeat-rate 25
+    }
+    touchpad {
+        tap
+        natural-scroll
+        accel-profile "flat"
+    }
+    mouse {
+        accel-speed -0.7
+        accel-profile "flat"
+    }
+}
+
+// output "HDMI-A-2" {
+//     mode "1920x1080@60"
+//     scale 1
+//     transform "normal"
+//     position x=-1920 y=230
+// }
+// output "DP-1" {
+//     mode "1920x1080@144.001"
+//     scale 1
+//     transform "normal"
+//     position x=0 y=0
+// }
+// output "DP-3" {
+//     mode "1280x1024@75.025"
+//     scale 1
+//     transform "normal"
+//     position x=1920 y=330
+// }
+output "eDP-1" {
+    mode "1920x1080@60"
+    scale 1
+    transform "normal"
+    position x=0 y=0
+}
+
+
+layout {
+    // mango: gappih/v=5, gappoh/v=10
+    gaps 5
+    struts {
+        left 5
+        right 5
+        top 5
+        bottom 5
+    }
+    center-focused-column "never"
+
+    preset-column-widths {
+        proportion 0.33333
+        proportion 0.5
+        proportion 0.66667
+    }
+
+    default-column-width { proportion 0.5; }
+
+    // mango: borderpx=2, focuscolor=0xd4c9c8ff, bordercolor=0x484848ff, urgentcolor=0xad401fff
+    focus-ring {
+        width 2
+        active-color "#a4a9a8"
+        inactive-color "#484848"
+        urgent-color "#ad401f"
+    }
+
+    border {
+        off
+        width 2
+        active-color "#d4c9c8"
+        inactive-color "#484848"
+        urgent-color "#ad401f"
+    }
+
+    // mango: rootcolor=0x201b14ff
+    background-color "#201b14"
+}
+
+// Global blur quality. Niedriges offset + mehr passes = sauberer Blur ohne Smear-Offset.
+blur {
+    passes 4
+    offset 3.0
+    noise 0.05
+    saturation 0.8
+}
+
+// Overview: transparenter Backdrop, damit das Wallpaper (awww-daemon) durchscheint
+// statt des grauen Default-Hintergrunds.
+overview {
+    backdrop-color "#00000000"
+}
+
+// Default: blur behind every window (mango: border_radius=6)
+window-rule {
+    background-effect {
+        blur true
+        xray false
+    }
+    geometry-corner-radius 6
+    clip-to-geometry true
+}
+
+// Kitty: explicit blur (pairs with background_opacity 0.80 in ~/.config/kitty/kitty.conf)
+window-rule {
+    match app-id="^kitty$"
+    background-effect {
+        blur true
+        xray false
+    }
+}
+
+window-rule {
+    match app-id="xwaylandvideobridge"
+    open-floating true
+}
+
+window-rule {
+    match app-id=r#"^org\.wezfurlong\.wezterm$"#
+    default-column-width {}
+}
+
+window-rule {
+    match app-id=r#"firefox$"# title="^Picture-in-Picture$"
+    open-floating true
+}
+
+// Blur behind the fuzzel launcher
+layer-rule {
+    match namespace="^launcher$"
+    background-effect {
+        blur true
+        xray false
+    }
+}
+
+// Blur behind quickshell / eww panels / notifications
+// layer-rule {
+//     match namespace="^quickshell"
+//     background-effect {
+//         blur true
+//     }
+// }
+
+layer-rule {
+    match namespace="^notifications$"
+    background-effect {
+        blur true
+        xray false
+    }
+}
+
+layer-rule {
+    match namespace="^eww"
+    background-effect {
+        blur true
+        xray false
+    }
+}
+
+// Zweite awww-daemon-Instanz (namespace ".backdrop") wird nur im Overview-Backdrop
+// gezeigt. Das Bild selbst ist vorgeblurrt (siehe spawn-at-startup unten);
+// background-effect { blur } wirkt hier nicht, weil hinter dem Wallpaper-Layer
+// nichts liegt, was geblurrt werden könnte.
+layer-rule {
+    match namespace=r#"^awww-daemon\.backdrop$"#
+    place-within-backdrop true
+}
+
+// Autostart — ported from ~/.config/mango
+spawn-at-startup "awww-daemon"
+// Zweite Instanz für den Overview-Backdrop (eigener Namespace).
+// Backdrop nutzt eine vorgeblurrte Kopie des Wallpapers in ~/.cache/niri-wallpapers/.
+// Bei Wallpaper-Wechsel neu generieren mit:
+//   magick ~/Pictures/NEUES.jpg -blur 0x20 ~/.cache/niri-wallpapers/backdrop.jpg
+spawn-at-startup "sh" "-c" "awww-daemon --namespace .backdrop & sleep 0.4; awww img --namespace .backdrop $HOME/.cache/niri-wallpapers/eclipse-blur.jpg"
+spawn-at-startup "xwayland-satellite"
+spawn-at-startup "quickshell"
+// spawn-at-startup "eww" "daemon"
+spawn-at-startup "dbus-update-activation-environment" "--systemd" "WAYLAND_DISPLAY" "XDG_CURRENT_DESKTOP"
+spawn-at-startup "gsettings" "set" "org.gnome.desktop.interface" "gtk-theme" "Tokyonight-Dark"
+spawn-at-startup "gsettings" "set" "org.gnome.desktop.interface" "color-scheme" "prefer-dark"
+
+environment {
+    XDG_CURRENT_DESKTOP "niri"
+    XDG_SESSION_TYPE "wayland"
+    DISPLAY ":0"
+}
+
+hotkey-overlay {
+    skip-at-startup
+}
+
+prefer-no-csd
+
+screenshot-path "~/Pictures/Screenshots/Screenshot from %Y-%m-%d %H-%M-%S.png"
+
+animations {
+    slowdown 1.0
+
+    // Springs fühlen sich smoother an als Cubic-Bezier — wie hyprland's springy feel.
+    window-open {
+        duration-ms 200
+        curve "ease-out-expo"
+    }
+
+    window-close {
+        duration-ms 180
+        curve "ease-out-quad"
+    }
+
+    window-movement {
+        spring damping-ratio=1.0 stiffness=800 epsilon=0.0001
+    }
+
+    window-resize {
+        spring damping-ratio=1.0 stiffness=800 epsilon=0.0001
+    }
+
+    workspace-switch {
+        spring damping-ratio=1.0 stiffness=1000 epsilon=0.0001
+    }
+
+    horizontal-view-movement {
+        spring damping-ratio=1.0 stiffness=600 epsilon=0.0001
+    }
+
+    overview-open-close {
+        spring damping-ratio=1.0 stiffness=800 epsilon=0.0001
+    }
+
+    config-notification-open-close {
+        spring damping-ratio=0.6 stiffness=1000 epsilon=0.001
+    }
+}
+
+binds {
+    Mod+Shift+Slash { show-hotkey-overlay; }
+
+    // --- Apps (mango) ---
+    Mod+Q hotkey-overlay-title="Terminal: kitty" { spawn "kitty"; }
+    Mod+Space hotkey-overlay-title="Launcher: fuzzel" { spawn "qs" "ipc" "call" "launcher" "toggle"; }
+    Mod+W hotkey-overlay-title="Firefox" { spawn "firefox"; }
+    Mod+O repeat=false hotkey-overlay-title="Overview" { toggle-overview; }
+    Mod+P hotkey-overlay-title="Pavucontrol" { spawn "pavucontrol"; }
+    Mod+T hotkey-overlay-title="VPN menu" { spawn "sh" "-c" "$HOME/.local/bin/vpn-menu"; }
+    Mod+M hotkey-overlay-title="Logout (quickshell)" { spawn "qs" "ipc" "call" "logout" "toggle"; }
+    Mod+N hotkey-overlay-title="Lock: hyprlock" { spawn "hyprlock"; }
+    Super+Alt+L hotkey-overlay-title="Lock: swaylock" { spawn "swaylock"; }
+
+    // --- Brightness (mango: SUPER+F5/F6) ---
+    Mod+F5 allow-when-locked=true { spawn "brightnessctl" "set" "10%-"; }
+    Mod+F6 allow-when-locked=true { spawn "brightnessctl" "set" "10%+"; }
+    XF86MonBrightnessDown allow-when-locked=true { spawn "brightnessctl" "set" "10%-"; }
+    XF86MonBrightnessUp   allow-when-locked=true { spawn "brightnessctl" "set" "10%+"; }
+
+    // --- Volume ---
+    XF86AudioRaiseVolume allow-when-locked=true { spawn "wpctl" "set-volume" "@DEFAULT_AUDIO_SINK@" "0.1+"; }
+    XF86AudioLowerVolume allow-when-locked=true { spawn "wpctl" "set-volume" "@DEFAULT_AUDIO_SINK@" "0.1-"; }
+    XF86AudioMute        allow-when-locked=true { spawn "wpctl" "set-mute" "@DEFAULT_AUDIO_SINK@" "toggle"; }
+    XF86AudioMicMute     allow-when-locked=true { spawn "wpctl" "set-mute" "@DEFAULT_AUDIO_SOURCE@" "toggle"; }
+
+    // --- Window management ---
+    Mod+C { close-window; }
+    Mod+F { maximize-column; }
+    Mod+Shift+F { fullscreen-window; }
+    Alt+F { fullscreen-window; }
+    Alt+Backslash { toggle-window-floating; }
+    Mod+V { toggle-window-floating; }
+    Mod+Shift+V { switch-focus-between-floating-and-tiling; }
+    Mod+G { toggle-column-tabbed-display; }
+
+    // --- Vim-style focus (mango: SUPER + hjkl, J/K crosses into workspaces) ---
+    Mod+H { focus-column-left; }
+    Mod+L { focus-column-right; }
+    Mod+J { focus-window-or-workspace-down; }
+    Mod+K { focus-window-or-workspace-up; }
+    Mod+Tab { focus-window-down-or-column-right; }
+
+    // --- Move/swap window (mango: SUPER+SHIFT + hjkl, J/K crosses workspaces) ---
+    Mod+Shift+H { move-column-left; }
+    Mod+Shift+L { move-column-right; }
+    Mod+Shift+J { move-window-down-or-to-workspace-down; }
+    Mod+Shift+K { move-window-up-or-to-workspace-up; }
+
+    // --- Monitor focus (mango: ALT + hjkl) ---
+    Alt+H { focus-monitor-left; }
+    Alt+L { focus-monitor-right; }
+    Alt+J { focus-monitor-down; }
+    Alt+K { focus-monitor-up; }
+    Alt+Shift+H { move-column-to-monitor-left; }
+    Alt+Shift+L { move-column-to-monitor-right; }
+    Alt+Shift+J { move-column-to-monitor-down; }
+    Alt+Shift+K { move-column-to-monitor-up; }
+
+    // --- Overview (mango: ALT+Tab) ---
+    Alt+Tab repeat=false { toggle-overview; }
+
+    // --- Workspaces (mango: SUPER+1..9 view tag) ---
+    Mod+1 { focus-workspace 1; }
+    Mod+2 { focus-workspace 2; }
+    Mod+3 { focus-workspace 3; }
+    Mod+4 { focus-workspace 4; }
+    Mod+5 { focus-workspace 5; }
+    Mod+6 { focus-workspace 6; }
+    Mod+7 { focus-workspace 7; }
+    Mod+8 { focus-workspace 8; }
+    Mod+9 { focus-workspace 9; }
+
+    Mod+Shift+1 { move-column-to-workspace 1; }
+    Mod+Shift+2 { move-column-to-workspace 2; }
+    Mod+Shift+3 { move-column-to-workspace 3; }
+    Mod+Shift+4 { move-column-to-workspace 4; }
+    Mod+Shift+5 { move-column-to-workspace 5; }
+    Mod+Shift+6 { move-column-to-workspace 6; }
+    Mod+Shift+7 { move-column-to-workspace 7; }
+    Mod+Shift+8 { move-column-to-workspace 8; }
+    Mod+Shift+9 { move-column-to-workspace 9; }
+
+    // --- Workspace navigation (mango: CTRL+h/l viewto*_have_client) ---
+    // Ctrl+H / Ctrl+L disabled — reserved for tmux/nvim pane navigation.
+    // Ctrl+H { focus-workspace-up; }
+    // Ctrl+L { focus-workspace-down; }
+    Ctrl+Mod+H { move-column-to-workspace-up; }
+    Ctrl+Mod+L { move-column-to-workspace-down; }
+
+    // --- Column/window sizing ---
+    Mod+R { switch-preset-column-width; }
+    Mod+Shift+R { switch-preset-window-height; }
+    Mod+Ctrl+R { reset-window-height; }
+    Mod+Ctrl+F { expand-column-to-available-width; }
+    Mod+E { center-column; }
+    Mod+Ctrl+C { center-visible-columns; }
+    Mod+Minus { set-column-width "-10%"; }
+    Mod+Equal { set-column-width "+10%"; }
+    Mod+Shift+Minus { set-window-height "-10%"; }
+    Mod+Shift+Equal { set-window-height "+10%"; }
+
+    Mod+BracketLeft  { consume-or-expel-window-left; }
+    Mod+BracketRight { consume-or-expel-window-right; }
+    Mod+Comma  { consume-window-into-column; }
+    Mod+Period { expel-window-from-column; }
+
+    // --- Move floating window (mango: CTRL+SHIFT + arrows) ---
+    Ctrl+Shift+Up    { spawn "niri" "msg" "action" "move-floating-window" "-x" "0" "-y" "-50"; }
+    Ctrl+Shift+Down  { spawn "niri" "msg" "action" "move-floating-window" "-x" "0" "-y" "50"; }
+    Ctrl+Shift+Left  { spawn "niri" "msg" "action" "move-floating-window" "-x" "-50" "-y" "0"; }
+    Ctrl+Shift+Right { spawn "niri" "msg" "action" "move-floating-window" "-x" "50" "-y" "0"; }
+
+    // --- Resize column/window (mango: CTRL+ALT + arrows) ---
+    Ctrl+Alt+Left  { set-column-width "-50"; }
+    Ctrl+Alt+Right { set-column-width "+50"; }
+    Ctrl+Alt+Up    { set-window-height "-50"; }
+    Ctrl+Alt+Down  { set-window-height "+50"; }
+
+    // --- Screenshots (mango: Print, SUPER+Print, SUPER+SHIFT+Print) ---
+    Print { screenshot; }
+    Ctrl+Print { screenshot-screen; }
+    Alt+Print { screenshot-window; }
+    Mod+Print { screenshot; }
+    Mod+Shift+Print { screenshot; }
+
+    Mod+Escape allow-inhibiting=false { toggle-keyboard-shortcuts-inhibit; }
+    Mod+Shift+E { quit; }
+    Mod+Shift+P { power-off-monitors; }
+}

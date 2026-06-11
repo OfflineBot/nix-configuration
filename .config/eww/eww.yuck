@@ -1,0 +1,7 @@
+
+(include "./widgets/bar/bar.yuck")
+(include "./widgets/bar-no-wk/bar.yuck")
+(include "./widgets/logout/logout.yuck")
+(include "./widgets/center-clock/center-clock.yuck")
+(include "./widgets/stats/stats.yuck")
+

@@ -1,0 +1,25 @@
+# Diese Pfade NICHT nach $HOME verlinken, wenn `stow .` läuft.
+# Achtung: sobald diese Datei existiert, ersetzt sie stow's eingebaute
+# Default-Ignore-Liste komplett -> daher VCS-Defaults hier mit drin.
+
+# --- Nix / dieses Repo als Flake ---
+flake\.nix
+flake\.lock
+\.stow-local-ignore
+
+# --- Git & andere VCS ---
+\.git
+\.gitignore
+\.gitmodules
+\.svn
+\.hg
+_darcs
+CVS
+RCS
+
+# --- Übliche Müll-/Doku-Dateien im Repo-Root ---
+^/README.*
+^/LICENSE.*
+^/COPYING
+.+~
+\#.*\#

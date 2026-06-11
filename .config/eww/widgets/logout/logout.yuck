@@ -1,0 +1,42 @@
+
+
+(defwindow logout
+    :monitor 0
+    :geometry (geometry :x "0%"
+                        :y "0px"
+        :anchor "center")
+    :stacking "fg"
+    :class "logout"
+    :reserve (struts :distance "40px" :side "top")
+    :windowtype "dock"
+    :exclusive true
+    :wm-ignore false
+
+    (centerbox :class "logout-box" :space-evenly false
+        (button 
+            :onclick "hyprctl dispatch exit; niri msg action quit --skip-confirmation; mmsg -s -d quit"
+            :class "logout-logout logout-item"
+            (label 
+                :class "logout-text logout-text-logout" 
+                :halign "center" 
+                :valign "center" 
+                :text 
+                "󰍃"))
+        (button :onclick "systemctl poweroff"
+            :class "logout-poweroff logout-item"
+            (label 
+                :class "logout-text logout-text-poweroff" 
+                :halign "center" 
+                :valign "center" 
+                :text 
+                "󰐥"))
+        (button :onclick "reboot" 
+            :class "logout-reboot logout-item"
+            (label 
+                :class "logout-text logout-text-reboot" 
+                :halign "center" 
+                :valign "center" 
+                :text 
+                "󰁪"))
+    ))
+

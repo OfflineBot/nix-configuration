@@ -1,0 +1,142 @@
+
+(defpoll time :interval "1s" :initial "00:00:00" "bash ~/.config/eww/scripts/stats.sh -t")
+(defpoll date :interval "30s" :initial "00/00/00" "bash ~/.config/eww/scripts/stats.sh -d")
+(defpoll ram :interval "3s" :initial "0" "bash ~/.config/eww/scripts/stats.sh -r")
+(defpoll cpu :interval "3s" :initial "0" "bash ~/.config/eww/scripts/stats.sh -c")
+(defpoll gpu :interval "3s" :initial "0" "bash ~/.config/eww/scripts/stats.sh -g")
+
+(defvar workspace_data "[]")
+
+
+(defwidget workspaces_small []
+    (box :space-evenly false
+        ;;(box :halign "start"
+        ;;    :class "arch-flex"
+        ;;    (image 
+        ;;        :path "/home/offlinebot/.config/eww/icons/arch_white.svg"
+        ;;        :image-height 20
+        ;;    )
+        ;;)
+        (box :orientation "horizontal" :halign "start" :space-evenly false :class "left-bar bar-item"
+            (box :space-evenly true :class "inner-left-bar"
+                (for ws in {workspace_data.workspaces}
+                    (button
+                        :class {ws.focused ? "wk wk-focus" : "wk"}
+                        :onclick "hyprctl dispatch workspace ${ws.id}"
+                        (label :class {ws.focused ? "label-focus" : ""} :text {ws.name}))
+                )
+            )
+        )
+    )
+)
+
+(defwidget workspaces []
+    (box :space-evenly false
+        ;;(box :halign "start"
+        ;;    :class "arch-flex"
+        ;;    (image 
+        ;;        :path "/home/offlinebot/.config/eww/icons/arch_white.svg"
+        ;;        :image-height 20
+        ;;    )
+        ;;)
+        (box :orientation "horizontal" :halign "start" :space-evenly false :class "left-bar bar-item"
+            (box :space-evenly true :class "inner-left-bar"
+                (for ws in {workspace_data.workspaces}
+                    (button
+                        :class {ws.focused ? "wk wk-focus" : "wk"}
+                        :onclick "hyprctl dispatch workspace ${ws.id}"
+                        (label :class {ws.focused ? "label-focus" : ""} :text {ws.name}))
+                )
+            )
+            (box
+                (label :text {workspace_data.active_window} :class "bar-label")
+            )
+        )
+    )
+)
+
+(defwidget stats [] 
+    (box :orientation "horizontal" :halign "end" :space-evenly false :class "right-bar bar-item"
+        (label :text {"  " + gpu + "%"} :class "bar-stat-item bar-stat-gpu" :tooltip "GPU")
+        (label :text {"  " + cpu + "%"} :class "bar-stat-item bar-stat-cpu" :tooltip "CPU")
+        (label :text {" " + ram + "%"} :class "bar-stat-item bar-stat-ram" :tooltip "RAM")
+        (button :onclick "eww open --toggle logout" :class "bar-stat-item bar-stat-off"
+            (label :text "")
+        )
+    )
+)
+
+
+(defwidget middle_stats [] 
+    (button :class "middle-bar bar-item" :onclick "eww open --toggle colorthemechanger"
+        (box
+        (label :text {date} :class "bar-stat-item bar-stat-date")
+        (label :text {time} :class "bar-stat-item bar-stat-time")
+    ))
+)
+
+
+(defwidget topbar_main_wk []
+    (centerbox :class "topbar-content"
+        :namespace "bar-space"
+        (workspaces)
+        (middle_stats)
+        (stats))
+)
+
+(defwidget topbar_main_small_wk []
+    (centerbox :class "topbar-content"
+        :namespace "bar-space"
+        (workspaces_small)
+        (middle_stats)
+        (stats))
+)
+
+
+(defwindow topbar0
+    :monitor 0
+    :geometry (geometry :x "0%"
+        :y "0px"
+        :width "100%"
+        :height "40px"
+        :anchor "top center")
+    :stacking "fg"
+    :class "topbar"
+    :reserve (struts :distance "40px" :side "top")
+    :windowtype "dock"
+    :exclusive true
+    :wm-ignore false
+    (topbar_main_wk))
+
+
+(defwindow topbar1
+    :monitor 1
+    :geometry (geometry :x "0%"
+        :y "0px"
+        :width "100%"
+        :height "40px"
+        :anchor "top center")
+    :stacking "fg"
+    :class "topbar"
+    :reserve (struts :distance "40px" :side "top")
+    :windowtype "dock"
+    :exclusive true
+    :wm-ignore false
+    (topbar_main_wk))
+
+
+(defwindow topbar2
+    :monitor 2
+    :geometry (geometry :x "0%"
+        :y "0px"
+        :width "100%"
+        :height "40px"
+        :anchor "top center")
+    :stacking "fg"
+    :class "topbar"
+    :reserve (struts :distance "40px" :side "top")
+    :windowtype "dock"
+    :exclusive true
+    :wm-ignore false
+    (topbar_main_small_wk))
+

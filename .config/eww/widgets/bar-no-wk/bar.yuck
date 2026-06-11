@@ -1,0 +1,83 @@
+
+(defpoll time1 :interval "1s" :initial "00:00:00" "bash ~/.config/eww/scripts/stats.sh -t")
+(defpoll date1 :interval "30s" :initial "00/00/00" "bash ~/.config/eww/scripts/stats.sh -d")
+(defpoll ram1 :interval "3s" :initial "0" "bash ~/.config/eww/scripts/stats.sh -r")
+(defpoll cpu1 :interval "3s" :initial "0" "bash ~/.config/eww/scripts/stats.sh -c")
+(defpoll gpu1 :interval "3s" :initial "0" "bash ~/.config/eww/scripts/stats.sh -g")
+
+
+(defwidget stats2 [] 
+    (box :orientation "horizontal" :halign "end" :space-evenly false :class "right-bar bar-item"
+        (label :text {"   " + gpu1 + "%"} :class "bar-stat-item bar-stat-gpu" :tooltip "GPU")
+        (label :text {"  " + cpu1 + "%"} :class "bar-stat-item bar-stat-cpu" :tooltip "CPU")
+        (label :text {" " + ram1 + "%"} :class "bar-stat-item bar-stat-ram" :tooltip "RAM")
+        (button :onclick "eww open --toggle logout" :class "bar-stat-item bar-stat-off"
+            (label :text "")
+        )
+    )
+)
+
+
+(defwidget middle_stats2 [] 
+    (box :orientation "horizontal" :halign "start" :space-evenly false :class "middle-bar bar-item"
+        (label :text {date1} :class "bar-stat-item bar-stat-date")
+        (label :text {time1} :class "bar-stat-item bar-stat-time")
+    )
+)
+
+
+(defwidget topbar_main2 []
+    (centerbox :class "topbar-content"
+        (middle_stats2)
+        (box "")
+        (stats2))
+)
+
+(defwindow bar0
+    :monitor 0
+    :geometry (geometry :x "0%"
+        :y "0px"
+        :width "100%"
+        :height "40px"
+        :anchor "top center")
+    :stacking "fg"
+    :class "bar"
+    :reserve (struts :distance "40px" :side "top")
+    :windowtype "dock"
+    :exclusive true
+    :wm-ignore false
+    (topbar_main2))
+
+
+
+(defwindow bar1
+    :monitor 1
+    :geometry (geometry :x "0%"
+        :y "0px"
+        :width "100%"
+        :height "40px"
+        :anchor "top center")
+    :stacking "fg"
+    :class "bar"
+    :reserve (struts :distance "40px" :side "top")
+    :windowtype "dock"
+    :exclusive true
+    :wm-ignore false
+    (topbar_main2))
+
+
+(defwindow bar2
+    :monitor 2
+    :geometry (geometry :x "0%"
+        :y "0px"
+        :width "100%"
+        :height "40px"
+        :anchor "top center")
+    :stacking "fg"
+    :class "bar"
+    :reserve (struts :distance "40px" :side "top")
+    :windowtype "dock"
+    :exclusive true
+    :wm-ignore false
+    (topbar_main2))
+

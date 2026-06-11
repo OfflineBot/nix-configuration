@@ -1,0 +1,235 @@
+
+@define-color bg_color rgba(24, 24, 24, 0.0);
+@define-color bg_color2 rgba(24, 24, 24, 0.0);
+@define-color bg_color_full #282828;
+@define-color border_color #ebdbb2;
+@define-color transparent rgba(0,0,0,0.0);
+
+* {
+    box-shadow: none;
+}
+
+.center-stats {
+    background-color: rgba(0, 0, 0, 0.0);
+    margin-top: 240px;
+    margin-left: 50px;
+}
+
+.center-stats-box {
+    border-radius: 16px;
+}
+
+.center-stats-item {
+    font-size: 40px;
+    font-weight: bold;
+    margin: 20px;
+    background-color: rgba(0,0,0,0.0);
+}
+
+.center-stat-ram {
+    color: #dbbc7f;
+}
+
+.center-stat-cpu {
+    color: #7fbbb3;
+}
+
+.center-stat-gpu {
+    color: #e67e80;
+}
+
+.center-clock {
+    background-color: rgba(0, 0, 0, 0.0);
+    margin-right: 50px;
+}
+.center-clock-date {
+    font-size: 100px;
+    color: #a89983;
+    margin-bottom: -330px;
+}
+.center-clock-clock {
+    font-family: "Arkitech", sans-serif;
+    font-weight: bold;
+    font-size: 230px;
+    color: #a89983;
+    margin-right: 0px;
+    margin-bottom: 0px;
+}
+
+.colorthemechanger {
+    background-color: rgba(0, 0, 0, 0.0);
+    margin: 8px;
+}
+.color-item-bc {
+    background-color: @bg_color_full;
+    border: 1px solid @border_color;
+    border-radius: 8px;
+}
+.color-item {
+    border: 1px solid @border_color;
+    border-radius: 50px;
+    margin: 5px;
+}
+.c-gruv { background-color: #181818; }
+.c-catppuccin { background-color: #0a0c0f; }
+.c-transparent { background-color: #505050; }
+
+.label-focus {
+    font-size: 20px;
+    color: #d3859a;
+}
+
+.steam-label {
+    color: #AAF0C1;
+}
+
+.topbar0, .topbar1, .topbar2 {
+    background-color: rgba(0, 0, 0, 0);
+}
+
+
+.topbar-content{
+    margin: 6px 8px;
+    margin-bottom: 0;
+    background-color: rgba(0,0,0,0);
+    background-color: @bg_color;
+    border: 1px solid #444;
+    border-top: none; border-left: none; border-right: none;
+    border: none;
+    border-radius: 0px;
+}
+
+.arch-flex {
+    background-color: @bg_color_full;
+    border-radius: 6px;
+    border: 1px solid @border_color;
+    padding: 0px 10px;
+    margin-right: 10px;
+}
+
+.right-bar {
+    background-color: @bg_color_full;
+    border-radius: 0 0 0 6px;
+    border: 1px solid @border_color;
+    border-top: none;
+    border-right: none;
+}
+
+.left-bar {
+    background-color: @bg_color_full;
+    border-radius: 0 0 6px 0;
+    border: 1px solid @border_color;
+    border-top: none;
+    border-left: none;
+}
+
+.middle-bar {
+    background-color: @bg_color_full;
+    border-radius: 0 0 6px 6px;
+    border: 1px solid @border_color;
+    border-top: none;
+}
+
+.bar0, .bar1, .bar2 { 
+background-color: rgba(0, 0, 0, 0.0);
+}
+
+.bar-item {
+    /*border: 1px solid #444;*/
+    padding: 2px 4px;
+    border: 1px solid @border_color;
+    border-radius: 6px;
+}
+
+.bar-stat-item {
+    margin: 2px 4px;
+    padding: 0;
+}
+
+.bar-stat-date {
+    margin-left: 20px;
+}
+.bar-stat-time {
+    margin-right: 20px;
+}
+.bar-stat-ram {
+    min-width: 70px;
+    color: #E9D26C;
+}
+.bar-stat-cpu {
+    min-width: 70px;
+    color: #89BEB7;
+}
+.bar-stat-gpu {
+    min-width: 70px;
+    color: #7EB7E6;
+}
+.bar-stat-off {
+    color: #ed5c66;
+    min-width: 30px;
+    background-color: @bg_color2;
+    border: none;
+    outline: none;
+}
+
+.bar-label {
+    padding: 4px 10px;
+    background-color: @bg_color2;
+    margin: 4px 10px;
+    border: 1px solid #444;
+    border-radius: 6px;
+    font-size: 14px;
+}
+.wk {
+    background-color: @bg_color2;
+    padding: 0px;
+    margin: 0px 0px;
+    border: none;
+    border-radius: 4px;
+} 
+.wk-focus {
+    margin: 4px 2px;
+    border: 1px solid #999;
+    border: none;
+    border-radius: 4px;
+}
+
+.wk:hover {
+    color: #ddd;
+}
+
+.logout {
+    background-color: rgba(0,0,0,0.0);
+}
+
+.logout-item {
+    background-image: none;
+    font-size: 190px;
+    color: #ebdbb2;
+    border-radius: 40px;
+    padding: 10px 65px;
+    margin: 20px;
+    background-color: @bg_color_full;
+    border: 1px solid #ebdbb2;
+}
+
+.logout-item:hover {
+    /*background-color: @bg_color_full;*/
+    background-color: @bg_color_full;
+    border-radius: 80px;
+    transition: 0.2s ease;
+}
+
+.logout-logout:hover {
+    color: #8ec07b;
+}
+.logout-poweroff:hover {
+    color: #fb4833;
+}
+.logout-reboot:hover {
+    color: #83a597;
+}
+
+.logout-text {
+    margin-right: 10px;
+}
