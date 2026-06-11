@@ -21,7 +21,8 @@ Scope {
     readonly property string backend:
         Quickshell.env("NIRI_SOCKET") ? "niri"
         : Quickshell.env("HYPRLAND_INSTANCE_SIGNATURE") ? "hyprland"
-        : Quickshell.env("MANGO_INSTANCE_SIGNATURE") ? "mango"
+        : (Quickshell.env("XDG_SESSION_DESKTOP") === "mango"
+           || Quickshell.env("DESKTOP_SESSION") === "mango") ? "mango"
         : "none"
 
     // Switch to a workspace (called from the view on click).
@@ -33,10 +34,10 @@ Scope {
         } else if (root.backend === "hyprland") {
             Hyprland.dispatch("workspace " + ws.id)
         } else if (root.backend === "mango") {
-            // mango (dwl-style tags): `view,<n>` switches to tag n on the
-            // focused monitor. acts on selmon, so clicking a tag on another
+            // mango (dwl-style tags): the `view` dispatch switches to a tag on
+            // the focused monitor. acts on selmon, so clicking a tag on another
             // output focuses that tag on the currently active monitor.
-            Quickshell.execDetached(["mmsg", "dispatch", "view," + String(ws.idx)])
+            Quickshell.execDetached(["mmsg", "-s", "-d", "view," + String(ws.idx)])
         }
     }
 
@@ -77,40 +78,65 @@ Scope {
     }
 
     // --------------------------------------------------------------- mango ---
-    // `mmsg watch all-tags` emits one compact JSON object per line:
-    //   {"all_tags":[{"monitor":"eDP-1","tags":[
-    //       {"index":1,"is_active":false,"is_urgent":false,"layout":"T","client_count":0}, ...]}, ...]}
+    // `mmsg -w -t -o` streams plain-text status blocks, one line each:
+    //   eDP-1 selmon 1
+    //   eDP-1 tag 2 1 1 1          <- tag <idx> <state> <clients> <focused>
+    //   eDP-1 clients 2
+    //   eDP-1 tags 3 2 0           <- occ/sel/urg masks (decimal, then binary)
+    // state is a bitmask: 1 = active (visible), 2 = urgent.
     // mango is tag-based (dwm/dwl): a fixed set of tags per output, several of
-    // which can be "active" (visible) at once. There's no per-tag name, and the
-    // stream doesn't say which monitor is selected, so `focused` mirrors
-    // `is_active` per output.
+    // which can be "active" (visible) at once. Tags have no names. `focused`
+    // is the active tag on the selected monitor (selmon).
     Process {
         id: mangoProc
         running: root.backend === "mango"
-        command: ["mmsg", "watch", "all-tags"]
+        command: ["mmsg", "-w", "-t", "-o"]
         stdout: SplitParser { onRead: line => root._onMangoLine(line) }
     }
 
-    function _onMangoLine(line) {
-        let ev
-        try { ev = JSON.parse(line) } catch (e) { return }
-        if (!ev.all_tags) return
+    // mon -> { selmon: bool, tags: { idx: {active, urgent, clients} } }
+    property var _mangoMons: ({})
 
+    function _onMangoLine(line) {
+        const p = line.trim().split(/\s+/)
+        if (p.length < 3) return
+        const mons = root._mangoMons
+        const m = mons[p[0]] || (mons[p[0]] = { selmon: false, tags: {} })
+
+        if (p[1] === "selmon") {
+            m.selmon = p[2] === "1"
+        } else if (p[1] === "tag" && p.length >= 5) {
+            const state = parseInt(p[3])
+            m.tags[parseInt(p[2])] = {
+                active: (state & 1) !== 0,
+                urgent: (state & 2) !== 0,
+                clients: parseInt(p[4])
+            }
+        } else if (p[1] === "tags") {
+            // mask lines close a monitor's block -> publish the new state
+            root._rebuildMango()
+        }
+    }
+
+    function _rebuildMango() {
         const ws = []
-        for (const mon of ev.all_tags) {
-            for (const t of mon.tags) {
+        for (const mon in root._mangoMons) {
+            const m = root._mangoMons[mon]
+            for (const key in m.tags) {
+                const t = m.tags[key]
                 // Only surface tags that are visible or hold a window; empty
                 // unused tags stay hidden (drop the filter to show all of them).
-                if (!t.is_active && t.client_count <= 0) continue
+                if (!t.active && t.clients <= 0) continue
+                const idx = parseInt(key)
                 ws.push({
-                    id: mon.monitor + ":" + t.index,
-                    idx: t.index,
+                    id: mon + ":" + idx,
+                    idx: idx,
                     name: "",
-                    output: mon.monitor,
-                    active: t.is_active,
-                    focused: t.is_active,
-                    urgent: t.is_urgent,
-                    occupied: t.client_count > 0
+                    output: mon,
+                    active: t.active,
+                    focused: t.active && m.selmon,
+                    urgent: t.urgent,
+                    occupied: t.clients > 0
                 })
             }
         }
