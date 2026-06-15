@@ -18,6 +18,7 @@
         gcc 
         quickshell
         wl-clipboard
+        sshfs
         btop
         cowsay
         go rustup
@@ -27,6 +28,7 @@
         pavucontrol
         brightnessctl
         hyprlock
+        xournalpp
 
         unzip zip
         claude-code
