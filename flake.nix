@@ -12,15 +12,20 @@
             inputs.nixpkgs.follows = "nixpkgs";
             inputs.home-manager.follows = "home-manager";
         };
+        catppuccin.url = "github:catppuccin/nix";
     };
 
-    outputs = { nixpkgs, home-manager, dotfiles, ... }:
+    outputs = { nixpkgs, home-manager, dotfiles, ... }@inputs:
         let
             system = "x86_64-linux";
-            pkgs = nixpkgs.legacyPackages.${system};
+            pkgs = import nixpkgs {
+                inherit system;
+                config.allowUnfree = true;
+            };
         in {
             homeConfigurations."offlinebot" = home-manager.lib.homeManagerConfiguration {
                 inherit pkgs;
+                extraSpecialArgs = { inherit inputs; };
                 modules = [
                     ./home.nix
                     dotfiles.homeManagerModules.default
