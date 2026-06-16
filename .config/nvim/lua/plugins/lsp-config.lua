@@ -63,6 +63,13 @@ return {
                 end
             }
 
+            -- rust-analyzer via rustup (Mason-Binaries laufen auf NixOS nicht).
+            -- Voraussetzung: `rustup component add rust-analyzer`
+            lspconfig.rust_analyzer.setup({
+                cmd = { "rust-analyzer" },
+                capabilities = capabilities,
+            })
+
             vim.keymap.set("n", "m", function()
               vim.lsp.buf.hover({border="rounded"})
             end, {})
