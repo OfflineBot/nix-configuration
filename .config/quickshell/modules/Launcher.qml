@@ -271,7 +271,13 @@ Scope {
                             anchors.fill: parent
                             hoverEnabled: true
                             cursorShape: Qt.PointingHandCursor
-                            onEntered: panel.selectedIndex = item.index
+                            // Only a REAL mouse move changes the selection. onEntered would
+                            // also fire when the list scrolls under a stationary cursor (e.g.
+                            // after an arrow key) and would yank the highlight back to the
+                            // mouse. onPositionChanged needs actual pointer motion:
+                            //   mouse moves      -> mouse decides
+                            //   mouse stationary -> keyboard decides
+                            onPositionChanged: panel.selectedIndex = item.index
                             onClicked: {
                                 panel.selectedIndex = item.index
                                 panel.launchSelected()

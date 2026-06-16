@@ -31,43 +31,51 @@ return {
             end)
 
             local capabilities = require('cmp_nvim_lsp').default_capabilities()
-            local lspconfig = require("lspconfig")
-            --lspconfig.gopls.setup({
-            --  capabilities = capabilities
-            --})
-            lspconfig.ts_ls.setup({
+
+            -- Capabilities global für alle Server setzen.
+            vim.lsp.config("*", {
+                capabilities = capabilities,
+            })
+
+            --vim.lsp.config("gopls", {})
+
+            vim.lsp.config("ts_ls", {
                 flags = {
                     debounce_text_changes = 500,
                 },
-                capabilities = capabilities
             })
-            lspconfig.solargraph.setup({
-                capabilities = capabilities
+            vim.lsp.config("solargraph", {})
+            vim.lsp.config("html", {})
+            vim.lsp.config("lua_ls", {})
+            vim.lsp.config("clangd", {
+                cmd = { "clangd", "--completion-style=detailed" },
             })
-            lspconfig.html.setup({
-                capabilities = capabilities
-            })
-            lspconfig.lua_ls.setup({
-                capabilities = capabilities
-            })
-            lspconfig.clangd.setup {
-              cmd = { "clangd", "--completion-style=detailed" }
-            }
 
-            lspconfig.julials.setup{
-                on_new_config = function(new_config, _)
-                    local julia = vim.fn.expand("~/.julia/environments/nvim-lspconfig/bin/julia")
-                    if require'lspconfig'.util.path.is_file(julia) then
-                        new_config.cmd[1] = julia
-                    end
+            -- julia: lokales Julia aus der nvim-lspconfig-Umgebung bevorzugen.
+            local julia = vim.fn.expand("~/.julia/environments/nvim-lspconfig/bin/julia")
+            if vim.fn.filereadable(julia) == 1 then
+                local julials_cmd = vim.lsp.config.julials and vim.lsp.config.julials.cmd
+                if type(julials_cmd) == "table" then
+                    julials_cmd = vim.deepcopy(julials_cmd)
+                    julials_cmd[1] = julia
+                    vim.lsp.config("julials", { cmd = julials_cmd })
                 end
-            }
+            end
 
             -- rust-analyzer via rustup (Mason-Binaries laufen auf NixOS nicht).
             -- Voraussetzung: `rustup component add rust-analyzer`
-            lspconfig.rust_analyzer.setup({
+            vim.lsp.config("rust_analyzer", {
                 cmd = { "rust-analyzer" },
-                capabilities = capabilities,
+            })
+
+            vim.lsp.enable({
+                "ts_ls",
+                "solargraph",
+                "html",
+                "lua_ls",
+                "clangd",
+                "julials",
+                "rust_analyzer",
             })
 
             vim.keymap.set("n", "m", function()

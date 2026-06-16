@@ -33,7 +33,8 @@ ShellRoot {
         borderColor: root.borderColor
         textColor: root.textColor
         borderWidth: root.borderWidth
-        cornerRadius: root.cornerRadius
+        cornerRadius: root.popupRadius
+        backgroundOpacity: root.backgroundOpacity
     }
 
     Launcher {

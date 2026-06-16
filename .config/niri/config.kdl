@@ -27,29 +27,28 @@ input {
     }
 }
 
-// output "HDMI-A-2" {
-//     mode "1920x1080@60"
-//     scale 1
-//     transform "normal"
-//     position x=-1920 y=230
-// }
-// output "DP-1" {
-//     mode "1920x1080@144.001"
-//     scale 1
-//     transform "normal"
-//     position x=0 y=0
-// }
-// output "DP-3" {
-//     mode "1280x1024@75.025"
-//     scale 1
-//     transform "normal"
-//     position x=1920 y=330
-// }
-output "eDP-1" {
-    mode "1920x1080@60"
+// DP-2 = 180Hz (2560x1440), Hauptmonitor, unten links
+output "DP-2" {
+    mode "2560x1440@180.002"
+    scale 1
+    transform "normal"
+    position x=0 y=1080
+}
+
+// DP-1 = 144Hz (1920x1080), über dem 180Hz Monitor
+output "DP-1" {
+    mode "1920x1080@144.001"
     scale 1
     transform "normal"
     position x=0 y=0
+}
+
+// DP-3 = 75Hz (1280x1024), rechts vom 180Hz Monitor
+output "DP-3" {
+    mode "1280x1024@75.025"
+    scale 1
+    transform "normal"
+    position x=2560 y=1080
 }
 
 
@@ -189,6 +188,16 @@ layer-rule {
 layer-rule {
     match namespace="^quickshell-tip$"
     geometry-corner-radius 8
+    background-effect {
+        blur true
+        xray false
+    }
+}
+
+// Logout overlay: fullscreen, so no corner radius — just blur the whole desktop
+// behind it (namespace set in modules/Logout.qml).
+layer-rule {
+    match namespace="^quickshell-logout$"
     background-effect {
         blur true
         xray false
