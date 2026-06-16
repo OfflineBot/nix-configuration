@@ -1,8 +1,9 @@
 // Fuzzy launcher for personal scripts in ~/.local/bin.
 //
-// Same look/behaviour as the app Launcher, but the list is the executable files
-// in ~/.local/bin (symlinks followed). Each entry gets a type icon derived from
-// its extension (.sh / .py / … each distinct; no extension = generic terminal).
+// Same look/behaviour as the app Launcher (box-sized, rounded, translucent,
+// blurred window via namespace "quickshell-launcher"; height adapts to the
+// result count). The list is the executable files in ~/.local/bin (symlinks
+// followed); each entry gets a type icon derived from its extension.
 //
 // Open it from a keybind via IPC:
 //   qs ipc call scriptlauncher toggle
@@ -21,8 +22,13 @@ Scope {
     property color searchBorderColor: "#858d98"
     property color textColor: "#d5dde8"
     property color selectionColor: "#8ec07b"
+    property real backgroundOpacity: 0.78      // translucent so niri's blur shows
     property int borderWidth: 1
-    property int cornerRadius: 20
+    property int cornerRadius: 14              // MUST match geometry-corner-radius in niri
+
+    property int boxWidth: 460
+    property int rowH: 36
+    property int maxRows: 8
 
     readonly property string scriptsDir: Quickshell.env("HOME") + "/.local/bin"
 
@@ -76,6 +82,32 @@ Scope {
         }
     }
 
+    // ---- fullscreen click-catcher (no blur) -------------------------------
+    Variants {
+        model: Quickshell.screens
+
+        PanelWindow {
+            required property var modelData
+            screen: modelData
+            visible: root.shown
+            color: "transparent"
+            exclusionMode: ExclusionMode.Ignore
+            aboveWindows: true
+            WlrLayershell.layer: WlrLayer.Top
+            WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
+            WlrLayershell.namespace: "quickshell-scriptlauncher-catch"
+
+            anchors.top: true; anchors.bottom: true
+            anchors.left: true; anchors.right: true
+
+            MouseArea {
+                anchors.fill: parent
+                onClicked: root.hide()
+            }
+        }
+    }
+
+    // ---- the box: own window so blur is clipped to its rounded shape -------
     PanelWindow {
         id: panel
 
@@ -83,18 +115,23 @@ Scope {
         color: "transparent"
         exclusionMode: ExclusionMode.Ignore
         aboveWindows: true
-
         WlrLayershell.layer: WlrLayer.Overlay
         WlrLayershell.keyboardFocus: WlrKeyboardFocus.Exclusive
-
-        anchors.top: true
-        anchors.bottom: true
-        anchors.left: true
-        anchors.right: true
+        WlrLayershell.namespace: "quickshell-launcher"   // reuse niri blur + corner rule
 
         property var scripts: []     // all script filenames in ~/.local/bin
         property var results: []     // filtered/sorted view
         property int selectedIndex: 0
+
+        readonly property int visibleRows: Math.min(results.length, root.maxRows)
+        readonly property int listH: visibleRows * root.rowH
+
+        implicitWidth: root.boxWidth
+        implicitHeight: 20 + search.implicitHeight
+                        + (results.length > 0 ? 8 + listH : 0) + 20
+        Behavior on implicitHeight {
+            NumberAnimation { duration: 110; easing.type: Easing.OutCubic }
+        }
 
         function fuzzyScore(q, s) {
             let si = 0, score = 0, run = 0, prev = -2
@@ -182,22 +219,27 @@ Scope {
 
         Component.onCompleted: loadProc.running = true
 
-        MouseArea {
-            anchors.fill: parent
-            onClicked: root.hide()
-        }
-
         Rectangle {
             id: box
-            anchors.centerIn: parent
-            width: 460
-            height: 440
-            color: root.backgroundColor
-            radius: 12
-            border.color: root.borderColor
+            anchors.fill: parent
+            color: Qt.rgba(root.backgroundColor.r, root.backgroundColor.g,
+                           root.backgroundColor.b, root.backgroundOpacity)
+            radius: root.cornerRadius
+            border.color: Qt.rgba(root.borderColor.r, root.borderColor.g,
+                                  root.borderColor.b, 0.3)
             border.width: root.borderWidth
 
-            MouseArea { anchors.fill: parent }
+            // entrance pop — smooth fade + slight grow from the top
+            opacity: 0
+            scale: 0.98
+            transformOrigin: Item.Top
+            states: State {
+                name: "on"; when: root.shown
+                PropertyChanges { target: box; opacity: 1; scale: 1 }
+            }
+            transitions: Transition {
+                NumberAnimation { properties: "opacity,scale"; duration: 130; easing.type: Easing.OutQuad }
+            }
 
             Column {
                 anchors.fill: parent
@@ -232,7 +274,8 @@ Scope {
                 ListView {
                     id: list
                     width: parent.width
-                    height: parent.height - search.height - parent.spacing
+                    height: panel.listH
+                    visible: panel.results.length > 0
                     clip: true
                     model: panel.results
 
@@ -242,7 +285,7 @@ Scope {
                         required property int index
 
                         width: list.width
-                        height: 36
+                        height: root.rowH
                         radius: 6
                         color: index === panel.selectedIndex ? root.selectionColor : "transparent"
 

@@ -13,6 +13,11 @@ ShellRoot {
     property int borderWidth: 1
     property int cornerRadius: 40
 
+    // shared look for the blurred popups (clock / network / launchers): keep in
+    // sync with geometry-corner-radius in niri's quickshell-* layer-rules
+    property real backgroundOpacity: 0.65
+    property int popupRadius: 14
+
     Time {
         textColor: root.textColor
     }
@@ -36,7 +41,8 @@ ShellRoot {
         borderColor: root.borderColor
         textColor: root.textColor
         borderWidth: root.borderWidth
-        cornerRadius: root.cornerRadius
+        cornerRadius: root.popupRadius
+        backgroundOpacity: root.backgroundOpacity
     }
 
     ScriptLauncher {
@@ -44,7 +50,8 @@ ShellRoot {
         borderColor: root.borderColor
         textColor: root.textColor
         borderWidth: root.borderWidth
-        cornerRadius: root.cornerRadius
+        cornerRadius: root.popupRadius
+        backgroundOpacity: root.backgroundOpacity
     }
 
 }

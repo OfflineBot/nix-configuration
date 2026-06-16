@@ -27,11 +27,16 @@ Item {
 
     property var screen
     property int barHeight: 30
+    property int barMargin: 8                  // the floating bar's gap
+    property real backgroundOpacity: 0.65      // translucent so niri's blur shows
     property color textColor: "#d5dde8"
     property color accentColor: "#8ec07b"
     property color warnColor: "#fabd2f"
     property color backgroundColor: "#11121a"
     property color borderColor: "#d5dde8"
+
+    // y offset just below the floating bar
+    readonly property int dropTop: barMargin + barHeight + 8
 
     implicitWidth: indicator.implicitWidth
     implicitHeight: 18
@@ -128,9 +133,14 @@ Item {
         opacity: root.netType === "none" ? 0.5 : 1.0
     }
 
+    // enlarge the hit area beyond the icon (full bar height + a bit on the sides)
     MouseArea {
         id: hoverArea
         anchors.fill: parent
+        anchors.topMargin: -8
+        anchors.bottomMargin: -8
+        anchors.leftMargin: -6
+        anchors.rightMargin: -6
         hoverEnabled: true
         cursorShape: Qt.PointingHandCursor
         onClicked: {
@@ -161,18 +171,21 @@ Item {
         aboveWindows: true
         WlrLayershell.layer: WlrLayer.Overlay
         WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
+        WlrLayershell.namespace: "quickshell-tip"     // niri blur + corner clip
 
         anchors.top: true
         anchors.left: true
-        margins.top: root.barHeight + 2
+        margins.top: root.dropTop
         implicitWidth: tipText.implicitWidth + 20
         implicitHeight: 28
 
         Rectangle {
             anchors.fill: parent
-            color: root.backgroundColor
+            color: Qt.rgba(root.backgroundColor.r, root.backgroundColor.g,
+                           root.backgroundColor.b, root.backgroundOpacity)
             radius: 8
-            border.color: root.borderColor
+            border.color: Qt.rgba(root.borderColor.r, root.borderColor.g,
+                                  root.borderColor.b, 0.3)
             border.width: 1
             Text {
                 id: tipText
@@ -411,14 +424,15 @@ Item {
         aboveWindows: true
         WlrLayershell.layer: WlrLayer.Overlay
         WlrLayershell.keyboardFocus: WlrKeyboardFocus.OnDemand   // don't grab all keyboard
+        WlrLayershell.namespace: "quickshell-network"            // niri blur + corner clip
 
         // Card-sized window (NOT full-screen) so the rest of the desktop stays
         // clickable — you can keep using terminals etc. while it's open. It
         // closes only on Escape or another click on the topbar icon.
         anchors.top: true
         anchors.right: true
-        margins.top: root.barHeight + 2          // just below the topbar
-        margins.right: 8
+        margins.top: root.dropTop                 // just below the floating bar
+        margins.right: root.barMargin
         implicitWidth: 330
         implicitHeight: 460
 
@@ -436,9 +450,11 @@ Item {
             Rectangle {
                 id: card
                 anchors.fill: parent
-                color: root.backgroundColor
-                radius: 10
-                border.color: root.borderColor
+                color: Qt.rgba(root.backgroundColor.r, root.backgroundColor.g,
+                               root.backgroundColor.b, root.backgroundOpacity)
+                radius: 14
+                border.color: Qt.rgba(root.borderColor.r, root.borderColor.g,
+                                      root.borderColor.b, 0.3)
                 border.width: 1
 
             ColumnLayout {

@@ -57,8 +57,13 @@ Item {
         Behavior on opacity { NumberAnimation { duration: 150; easing.type: Easing.OutQuad } }
     }
 
+    // enlarge the hit area beyond the icon (full bar height + a bit on the sides)
     MouseArea {
         anchors.fill: parent
+        anchors.topMargin: -8
+        anchors.bottomMargin: -8
+        anchors.leftMargin: -6
+        anchors.rightMargin: -6
         cursorShape: Qt.PointingHandCursor
         onClicked: root.toggleMute()
     }

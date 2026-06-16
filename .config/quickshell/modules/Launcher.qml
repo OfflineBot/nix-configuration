@@ -1,3 +1,14 @@
+// App launcher: fuzzy-search the desktop entries and launch one.
+//
+// Styled like the other popups: a box-sized, rounded, translucent, blurred
+// window (namespace "quickshell-launcher" -> niri blur + corner clip), centered
+// on screen. A separate fullscreen, NON-blurred window catches click-outside.
+//
+// The box height adapts to the number of results (up to maxRows), so a short
+// list gives a short box instead of always rendering at full height.
+//
+// Toggle via IPC:  qs ipc call launcher toggle
+
 import Quickshell
 import Quickshell.Io
 import Quickshell.Wayland
@@ -13,8 +24,13 @@ Scope {
     property color searchBorderColor: "#858d98"
     property color textColor: "#d5dde8"
     property color selectionColor: "#8ec07b"
+    property real backgroundOpacity: 0.78      // translucent so niri's blur shows
     property int borderWidth: 1
-    property int cornerRadius: 20
+    property int cornerRadius: 14              // MUST match geometry-corner-radius in niri
+
+    property int boxWidth: 460
+    property int rowH: 36
+    property int maxRows: 8
 
     property bool shown: false
 
@@ -29,6 +45,32 @@ Scope {
         function hide()   { root.hide() }
     }
 
+    // ---- fullscreen click-catcher (no blur) -------------------------------
+    Variants {
+        model: Quickshell.screens
+
+        PanelWindow {
+            required property var modelData
+            screen: modelData
+            visible: root.shown
+            color: "transparent"
+            exclusionMode: ExclusionMode.Ignore
+            aboveWindows: true
+            WlrLayershell.layer: WlrLayer.Top           // below the box (Overlay)
+            WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
+            WlrLayershell.namespace: "quickshell-launcher-catch"
+
+            anchors.top: true; anchors.bottom: true
+            anchors.left: true; anchors.right: true
+
+            MouseArea {
+                anchors.fill: parent
+                onClicked: root.hide()
+            }
+        }
+    }
+
+    // ---- the box: own window so blur is clipped to its rounded shape -------
     PanelWindow {
         id: panel
 
@@ -36,17 +78,24 @@ Scope {
         color: "transparent"
         exclusionMode: ExclusionMode.Ignore
         aboveWindows: true
-
-        WlrLayershell.layer: WlrLayer.Overlay
+        WlrLayershell.layer: WlrLayer.Overlay       // above the catcher
         WlrLayershell.keyboardFocus: WlrKeyboardFocus.Exclusive
+        WlrLayershell.namespace: "quickshell-launcher"   // niri blur + corner clip
 
-        anchors.top: true
-        anchors.bottom: true
-        anchors.left: true
-        anchors.right: true
-
+        // no anchors -> centered on screen by the compositor
         property var results: []
         property int selectedIndex: 0
+
+        // height adapts to result count (clamped to maxRows)
+        readonly property int visibleRows: Math.min(results.length, root.maxRows)
+        readonly property int listH: visibleRows * root.rowH
+
+        implicitWidth: root.boxWidth
+        implicitHeight: 20 + search.implicitHeight
+                        + (results.length > 0 ? 8 + listH : 0) + 20
+        Behavior on implicitHeight {
+            NumberAnimation { duration: 110; easing.type: Easing.OutCubic }
+        }
 
         function fuzzyScore(q, s) {
             let si = 0, score = 0, run = 0, prev = -2
@@ -129,22 +178,27 @@ Scope {
             function onValuesChanged() { panel.updateResults() }
         }
 
-        MouseArea {
-            anchors.fill: parent
-            onClicked: root.hide()
-        }
-
         Rectangle {
             id: box
-            anchors.centerIn: parent
-            width: 460
-            height: 440
-            color: root.backgroundColor
-            radius: 12
-            border.color: root.borderColor
+            anchors.fill: parent
+            color: Qt.rgba(root.backgroundColor.r, root.backgroundColor.g,
+                           root.backgroundColor.b, root.backgroundOpacity)
+            radius: root.cornerRadius
+            border.color: Qt.rgba(root.borderColor.r, root.borderColor.g,
+                                  root.borderColor.b, 0.3)
             border.width: root.borderWidth
 
-            MouseArea { anchors.fill: parent }
+            // entrance pop — smooth fade + slight grow from the top
+            opacity: 0
+            scale: 0.98
+            transformOrigin: Item.Top
+            states: State {
+                name: "on"; when: root.shown
+                PropertyChanges { target: box; opacity: 1; scale: 1 }
+            }
+            transitions: Transition {
+                NumberAnimation { properties: "opacity,scale"; duration: 130; easing.type: Easing.OutQuad }
+            }
 
             Column {
                 anchors.fill: parent
@@ -179,7 +233,8 @@ Scope {
                 ListView {
                     id: list
                     width: parent.width
-                    height: parent.height - search.height - parent.spacing
+                    height: panel.listH
+                    visible: panel.results.length > 0
                     clip: true
                     model: panel.results
 
@@ -189,7 +244,7 @@ Scope {
                         required property int index
 
                         width: list.width
-                        height: 36
+                        height: root.rowH
                         radius: 6
                         color: index === panel.selectedIndex ? root.selectionColor : "transparent"
 
