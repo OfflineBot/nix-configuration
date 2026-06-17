@@ -25,6 +25,10 @@ input {
         accel-speed -0.7
         accel-profile "flat"
     }
+    tablet {
+        // Tablet immer auf genau einen Monitor begrenzen (statt über alle)
+        map-to-output "DP-2"
+    }
 }
 
 // DP-2 = 180Hz (2560x1440), Hauptmonitor, unten links
@@ -124,6 +128,20 @@ window-rule {
     }
 }
 
+// Firefox: blur behind, like kitty. KEIN window-weites opacity mehr — der Blur
+// scheint nur dort durch, wo Firefox selbst transparente Pixel malt. Das ist
+// per userContent.css NUR die Neue-Tab-/Startseite (about:newtab/home); echte
+// Webseiten haben eigenen deckenden Hintergrund und bleiben deckend.
+// Voraussetzung: widget.wayland.use-opaque-region=false (in der user.js).
+window-rule {
+    match app-id=r#"firefox$"#
+    exclude title="^Picture-in-Picture$"
+    background-effect {
+        blur true
+        xray true
+    }
+}
+
 window-rule {
     match app-id="xwaylandvideobridge"
     open-floating true
@@ -204,8 +222,12 @@ layer-rule {
     }
 }
 
+// mako notifications: round the blur to mako's shape (border-radius=14 in
+// ~/.config/mako/config). NOTE: clip-to-geometry is NOT supported in layer-rules
+// in this niri build (only in window-rules), so geometry-corner-radius alone.
 layer-rule {
     match namespace="^notifications$"
+    geometry-corner-radius 14
     background-effect {
         blur true
         xray false
@@ -240,7 +262,7 @@ spawn-at-startup "xwayland-satellite"
 spawn-at-startup "quickshell"
 // spawn-at-startup "eww" "daemon"
 spawn-at-startup "dbus-update-activation-environment" "--systemd" "WAYLAND_DISPLAY" "XDG_CURRENT_DESKTOP"
-spawn-at-startup "gsettings" "set" "org.gnome.desktop.interface" "gtk-theme" "Tokyonight-Dark"
+spawn-at-startup "gsettings" "set" "org.gnome.desktop.interface" "gtk-theme" "catppuccin-mocha-maroon-standard+default"
 spawn-at-startup "gsettings" "set" "org.gnome.desktop.interface" "color-scheme" "prefer-dark"
 
 environment {

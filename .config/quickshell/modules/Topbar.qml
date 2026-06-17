@@ -21,13 +21,11 @@ Scope {
     property color borderColor: "#d5dde8"
     property color textColor: "#d5dde8"
     property color accentColor: "#8ec07b"
-    property real backgroundOpacity: 0.65     // < 1 so niri's blur shows through
+    property real backgroundOpacity: 0.65
     property int barHeight: 30
-    // float gap on every side — matches niri's window inset (struts 5 + gaps 5)
-    // so the bar lines up with the tiled windows below it
     property int barMargin: 10
-    property int barRadius: 14                 // MUST match geometry-corner-radius in niri
-    property int barPadding: 12                // uniform inner padding (left/right)
+    property int barRadius: 8
+    property int barPadding: 12
 
     // per-monitor visibility, default visible
     property var shownScreens: ({})

@@ -1,9 +1,14 @@
+# mako — matched to the kitty / quickshell "serenity" theme
+#   bg #11121a · fg #d5dde8 · accent green #8ec07b · cyan #8fbed1 · red #fb4833
+# (radius 14 + 1px border + FiraCode Nerd Font, same as the quickshell popups)
+
 font=FiraCode Nerd Font Mono 11
-background-color=#282828ee
-text-color=#cdd6f4
-border-color=#cba6f7
+background-color=#11121aee
+text-color=#d5dde8
+border-color=#8ec07b
 border-size=2
-border-radius=8
+border-radius=14
+progress-color=over #2a3950
 padding=12
 margin=8
 default-timeout=5000
@@ -12,8 +17,10 @@ layer=overlay
 anchor=top-right
 
 [urgency=low]
-border-color=#89b4fa
+border-color=#8fbed1
+text-color=#d5dde8
 
 [urgency=high]
-border-color=#f38ba8
+border-color=#fb4833
+text-color=#d5dde8
 default-timeout=10000
