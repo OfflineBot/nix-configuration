@@ -59,3 +59,12 @@ cd ~/.dotfiles && stow .
 - Browser: Firefox
 - Locale: en_US.UTF-8 mit de_DE Regional, Zeitzone Europe/Berlin
 
+## Screenshots
+
+Example screenshots of the desktop:
+
+<p align="center">
+  <img src="assets/screenshot-1.png" width="48%" />
+  <img src="assets/screenshot-2.png" width="48%" />
+</p>
+
