@@ -52,7 +52,7 @@ output "DP-3" {
     mode "1280x1024@75.025"
     scale 1
     transform "normal"
-    position x=2560 y=1080
+    position x=2560 y=1580
 }
 
 
@@ -264,6 +264,8 @@ spawn-at-startup "quickshell"
 spawn-at-startup "dbus-update-activation-environment" "--systemd" "WAYLAND_DISPLAY" "XDG_CURRENT_DESKTOP"
 spawn-at-startup "gsettings" "set" "org.gnome.desktop.interface" "gtk-theme" "catppuccin-mocha-maroon-standard+default"
 spawn-at-startup "gsettings" "set" "org.gnome.desktop.interface" "color-scheme" "prefer-dark"
+// EasyEffects (Flatpak) im Hintergrund starten, ohne Fenster
+spawn-at-startup "flatpak" "run" "com.github.wwmm.easyeffects" "--gapplication-service"
 
 environment {
     XDG_CURRENT_DESKTOP "niri"
@@ -330,6 +332,8 @@ binds {
     Mod+P hotkey-overlay-title="Pavucontrol" { spawn "pavucontrol"; }
     Mod+T hotkey-overlay-title="VPN menu" { spawn "sh" "-c" "$HOME/.local/bin/vpn-menu"; }
     Mod+M hotkey-overlay-title="Logout (quickshell)" { spawn "qs" "ipc" "call" "logout" "toggle"; }
+    // Info panel (date/time · media · volume) on the focused monitor
+    Mod+I hotkey-overlay-title="Info panel (quickshell)" { spawn "sh" "-c" "qs ipc call topbar toggleClock \"$(niri msg --json focused-output | jq -r .name)\""; }
     Mod+N hotkey-overlay-title="Lock: hyprlock" { spawn "hyprlock"; }
     Super+Alt+L hotkey-overlay-title="Lock: swaylock" { spawn "swaylock"; }
 
@@ -344,6 +348,15 @@ binds {
     XF86AudioLowerVolume allow-when-locked=true { spawn "wpctl" "set-volume" "@DEFAULT_AUDIO_SINK@" "0.1-"; }
     XF86AudioMute        allow-when-locked=true { spawn "wpctl" "set-mute" "@DEFAULT_AUDIO_SINK@" "toggle"; }
     XF86AudioMicMute     allow-when-locked=true { spawn "wpctl" "set-mute" "@DEFAULT_AUDIO_SOURCE@" "toggle"; }
+
+    // --- Media / playerctl (portiert aus ~/.config/hypr/config/keybinds.conf) ---
+    // Spotify-Vorrang: wenn ein Spotify-Player läuft, den ansteuern, sonst den Default-Player.
+    Alt+Q allow-when-locked=true hotkey-overlay-title="Musik: vorheriger Titel" { spawn "sh" "-c" "playerctl -l | grep -qi spotify && playerctl -p spotify previous || playerctl previous"; }
+    Alt+W allow-when-locked=true hotkey-overlay-title="Musik: Play/Pause" { spawn "sh" "-c" "playerctl -l | grep -qi spotify && playerctl -p spotify play-pause || playerctl play-pause"; }
+    Alt+E allow-when-locked=true hotkey-overlay-title="Musik: nächster Titel" { spawn "sh" "-c" "playerctl -l | grep -qi spotify && playerctl -p spotify next || playerctl next"; }
+    XF86AudioPlay allow-when-locked=true { spawn "playerctl" "play-pause"; }
+    XF86AudioNext allow-when-locked=true { spawn "playerctl" "next"; }
+    XF86AudioPrev allow-when-locked=true { spawn "playerctl" "previous"; }
 
     // --- Window management ---
     Mod+C { close-window; }

@@ -50,6 +50,8 @@ Scope {
         function toggle(name: string) { root.toggle(name) }
         function show(name: string)   { root.show(name) }
         function hide(name: string)   { root.hide(name) }
+        // toggle the info/clock popup on the given screen
+        function toggleClock(name: string) { root.toggleClock(name) }
     }
 
     WorkspaceProvider { id: workspaceProvider }
@@ -131,6 +133,10 @@ Scope {
                         backgroundColor: root.backgroundColor
                         borderColor: root.borderColor
                     }
+                    MicMute {
+                        anchors.verticalCenter: parent.verticalCenter
+                        textColor: root.textColor
+                    }
                     Volume {
                         anchors.verticalCenter: parent.verticalCenter
                         textColor: root.textColor
@@ -156,6 +162,7 @@ Scope {
             backgroundColor: root.backgroundColor
             borderColor: root.borderColor
             textColor: root.textColor
+            accentColor: root.accentColor
             backgroundOpacity: root.backgroundOpacity
             onDismissed: root.clockOpenOn = ""
         }
