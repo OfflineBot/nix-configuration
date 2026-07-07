@@ -34,11 +34,13 @@
         neovim
         kitty
         git
+        docker
         stow
         fuzzel
         awww
         gcc 
         quickshell
+        xwayland-satellite
         wl-clipboard
         sshfs
         btop
@@ -50,8 +52,11 @@
         pavucontrol
         brightnessctl
         hyprlock
+        tree
         xournalpp
         zathura
+        texliveFull
+        onlyoffice-desktopeditors
 
         unzip zip
         claude-code
